@@ -6,13 +6,17 @@ import { JwtModule } from '@nestjs/jwt';
 import { QueueModule } from '@/queue/queue.module';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { CustomThrottlerGuard } from './guards/custom-throttler.guard';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { redisStore } from 'cache-manager-redis-store';
 import { CacheModule, CacheStore } from '@nestjs/cache-manager';
 import { configAuth } from './configs/auth';
 import { configCache } from './configs/cache';
-import { FormatResponseInterceptor } from './interceptors';
+import { FormatResponseInterceptor, HttpCacheInterceptor } from './interceptors';
 import { BusinessModule } from '@/business/business.module';
+import { TokenController } from './controllers/token.controller';
+
+const controllers = [HealthController, TokenController];
+
 @Module({
   imports: [
     ThrottlerModule.forRoot({
@@ -48,18 +52,24 @@ import { BusinessModule } from '@/business/business.module';
       }),
       inject: [ConfigService],
     }),
+    ThrottlerModule.forRoot({
+      ttl: 60,
+      limit: 10000,
+    }),
   ],
-  controllers: [HealthController],
+  controllers: [...controllers],
   providers: [
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: CustomThrottlerGuard,
-    // },
-    // {
-    //   provide: APP_INTERCEPTOR,
-    //   useClass: FormatResponseInterceptor,
-    // },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: HttpCacheInterceptor,
+    },
+    // ...services,
   ],
+  exports: [],
 })
 export class ApiModule implements OnApplicationBootstrap {
   constructor() {}

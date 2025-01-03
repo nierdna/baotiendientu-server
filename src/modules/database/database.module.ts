@@ -6,12 +6,16 @@ import { UserEntity } from '@/database/entities';
 import { AdminConfigRepository, UserRepository } from './repositories';
 import { AdminConfigEntity } from './entities/admin-config.entity';
 import { SeedDatabase } from './seeders/seed.database';
+import { TokenRepository } from './repositories/token.repository';
+import { TokenEntity } from './entities/token.entity';
+import { BirdeyeService } from '@/business/services/birdeye.service';
+import { TokenService } from '@/business/services/token.service';
 
-const repositories = [UserRepository, AdminConfigRepository];
+const repositories = [UserRepository, AdminConfigRepository, TokenRepository];
 
-const services = [];
+const services = [BirdeyeService, TokenService];
 
-const entities = [UserEntity, AdminConfigEntity];
+const entities = [UserEntity, AdminConfigEntity, TokenEntity];
 
 @Module({
   imports: [
