@@ -43,4 +43,19 @@ export class TokenController {
   async getTokens(@Query() getTokensDto: GetTokensDto): Promise<TokenInfo[]> {
     return this.tokenService.getTokensByAddresses(getTokensDto.addresses);
   }
+
+  @Get('wallet')
+  @Throttle(40, 60)
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(60000)
+  @ApiOperation({ summary: 'Lấy danh sách token của ví' })
+  @ApiBaseResponse(TokenEntity, {
+    statusCode: 200, 
+    description: 'Lấy thông tin token thành công',
+    isArray: true
+  })
+  @ResponseMessage('Lấy thông tin token thành công')
+  async getTokensByWallet(@Query('wallet') wallet: string): Promise<TokenInfo[]> {
+    return this.tokenService.getTokensByWallet(wallet);
+  }
 } 

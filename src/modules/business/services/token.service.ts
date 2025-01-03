@@ -97,4 +97,20 @@ export class TokenService {
       return [];
     }
   }
+  async getTokensByWallet(walletAddress: string): Promise<TokenInfo[]> {
+    try {
+      const walletTokens = await this.birdeyeService.getWalletTokens(walletAddress);
+      
+      if (!walletTokens) {
+        this.logger.warn(`Không tìm thấy token cho ví ${walletAddress}`);
+        return [];
+      }
+
+      return walletTokens;
+
+    } catch (error) {
+      this.logger.error(`Lỗi khi lấy token cho ví ${walletAddress}:`, error);
+      return [];
+    }
+  }
 }
