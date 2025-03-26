@@ -1,7 +1,7 @@
 import { Entity, Column, Index } from 'typeorm';
 import { BaseEntity } from './base.entity';
 
-@Entity('admin-configs')
+@Entity('admin_configs')
 export class AdminConfigEntity extends BaseEntity {
   @Column({ unique: true })
   @Index()

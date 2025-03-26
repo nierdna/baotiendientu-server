@@ -13,9 +13,8 @@ import { configAuth } from './configs/auth';
 import { configCache } from './configs/cache';
 import { FormatResponseInterceptor, HttpCacheInterceptor } from './interceptors';
 import { BusinessModule } from '@/business/business.module';
-import { TokenController } from './controllers/token.controller';
 
-const controllers = [HealthController, TokenController];
+const controllers = [HealthController];
 
 @Module({
   imports: [
