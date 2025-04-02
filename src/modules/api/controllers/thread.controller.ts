@@ -64,10 +64,10 @@ export class ThreadController {
   @Sse('stream-message')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Stream a message response for a given question and thread' })
+  @ApiOperation({ summary: 'Stream a message response from OpenAI for a given question and thread' })
   @ApiResponse({
     status: 200,
-    description: 'Stream of message chunks',
+    description: 'Stream of message chunks from OpenAI GPT model',
   })
   @ApiResponse({
     status: 401,

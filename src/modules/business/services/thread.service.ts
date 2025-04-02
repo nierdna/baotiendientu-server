@@ -6,12 +6,15 @@ import { Thread, Message } from '../../database/entities';
 import { Observable } from 'rxjs';
 import { PaginateDto } from '@/shared/pagination/paginate.dto';
 import { IGetPaginationResponse, paginate } from '@/shared/pagination/pagination';
+import { OpenAIService } from './openai.service';
+import { map, tap } from 'rxjs/operators';
 
 @Injectable()
 export class ThreadService {
   constructor(
     private readonly threadRepository: ThreadRepository,
-    private readonly messageRepository: MessageRepository
+    private readonly messageRepository: MessageRepository,
+    private readonly openAIService: OpenAIService
   ) {}
 
   /**
@@ -92,46 +95,56 @@ export class ThreadService {
               // Continue with the stream even if saving fails
             }
 
-            // Example implementation - In a real app, this would call an AI service
-            // Here we're just simulating a streaming response
-            const response = `This is a sample response to the question: "${question}"`;
-            const chunks = response.split(' ');
-            
+            // Variables to collect full response
             let fullResponse = '';
-            let i = 0;
-            const interval = setInterval(() => {
-              if (i < chunks.length) {
-                const chunk = chunks[i] + ' ';
-                fullResponse += chunk;
-                observer.next(chunk);
-                i++;
-              } else {
-                clearInterval(interval);
-                
-                // Save AI response to database after stream is complete
-                const aiMessage = new Message();
-                aiMessage.thread_id = threadId;
-                aiMessage.user_id = userId; // Keep the user ID for attribution
-                aiMessage.content = fullResponse;
-                aiMessage.is_ai = true; // Mark as AI message
-                aiMessage.parent_id = userMessage?.id || null; // Link to the user's message
-                
-                this.messageRepository.save(aiMessage)
-                  .then(() => {
-                    console.log(`✅ [ThreadService] [streamMessage] AI message saved:`, aiMessage.id);
-                    observer.complete();
-                  })
-                  .catch(error => {
-                    console.log(`🔴 [ThreadService] [streamMessage] Error saving AI message:`, error);
-                    observer.complete(); // Complete the stream even if saving fails
-                  });
-              }
-            }, 200);
+
+            // Subscribe to OpenAI stream
+            const subscription = this.openAIService.streamCompletion(question)
+              .pipe(
+                tap(chunk => {
+                  // Collect the full response
+                  fullResponse += chunk;
+                })
+              )
+              .subscribe({
+                next: (chunk) => {
+                  // Forward chunk to client
+                  observer.next(chunk);
+                },
+                error: (error) => {
+                  console.log(`🔴 [ThreadService] [streamMessage] OpenAI stream error:`, error);
+                  observer.error(error);
+                },
+                complete: () => {
+                  // Save AI response to database after stream is complete
+                  const aiMessage = new Message();
+                  aiMessage.thread_id = threadId;
+                  aiMessage.user_id = userId; // Keep the user ID for attribution
+                  aiMessage.content = fullResponse;
+                  aiMessage.is_ai = true; // Mark as AI message
+                  aiMessage.parent_id = userMessage?.id || null; // Link to the user's message
+                  
+                  console.log(`📝 [ThreadService] [streamMessage] Full AI response: 
+----- AI RESPONSE START -----
+${fullResponse}
+----- AI RESPONSE END -----`);
+                  
+                  this.messageRepository.save(aiMessage)
+                    .then(() => {
+                      console.log(`✅ [ThreadService] [streamMessage] AI message saved:`, aiMessage.id);
+                      observer.complete();
+                    })
+                    .catch(error => {
+                      console.log(`🔴 [ThreadService] [streamMessage] Error saving AI message:`, error);
+                      observer.complete(); // Complete the stream even if saving fails
+                    });
+                }
+              });
 
             // Clean up on unsubscribe
             return () => {
               console.log(`✅ [ThreadService] [streamMessage] Stream closed`);
-              clearInterval(interval);
+              subscription.unsubscribe();
             };
           })
           .catch(error => {
