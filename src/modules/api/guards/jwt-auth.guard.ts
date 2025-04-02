@@ -24,20 +24,21 @@ export class JwtAuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
-    if (
-      !process.env.APP_ENV ||
-      process.env.APP_ENV === 'local' ||
-      request.originalUrl === '/blogs' ||
-      (request.originalUrl.startsWith('/blogs?') &&
-        request.method === 'GET' &&
-        !token)
-    ) {
-      return true;
-    }
+    
+    // Chỉ bypass kiểm tra token cho endpoint /blogs
+    // if (
+    //   request.originalUrl === '/blogs' ||
+    //   (request.originalUrl.startsWith('/blogs?') &&
+    //     request.method === 'GET' &&
+    //     !token)
+    // ) {
+    //   return true;
+    // }
+    
     if (token) {
       try {
         const payload: TJWTPayload = await this.jwtService.verifyAsync(token, {
-          secret: this.configService.get<string>('auth.key.jwt_secret_key'),
+          secret: this.configService.get<string>('JWT_SECRET'),
         });
         if (
           !(await this.userRepository.exists({ where: { id: payload.sub } }))
@@ -56,7 +57,7 @@ export class JwtAuthGuard implements CanActivate {
       }
       return true;
     } else {
-      throw new UnauthorizedException('Unauthorize');
+      throw new UnauthorizedException('Unauthorized');
     }
   }
 
