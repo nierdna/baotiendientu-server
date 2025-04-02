@@ -1,10 +1,19 @@
-import { Body, Controller, Post, UseGuards, UnauthorizedException } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Post, UseGuards, UnauthorizedException, Param, Sse, Get, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { ThreadService } from '@/business/services';
-import { CreateThreadDto, ThreadResponseDto } from '@/api/dtos';
+import { 
+  CreateThreadDto, 
+  ThreadResponseDto, 
+  StreamMessageDto, 
+  ThreadListResponseDto,
+  MessageListResponseDto
+} from '@/api/dtos';
 import { CurrentUserId } from '../decorator/user.decorator';
 import { User } from '@/database/entities';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { PaginateDto } from '@/shared/pagination/paginate.dto';
 
 @ApiTags('Thread')
 @Controller('thread')
@@ -48,6 +57,134 @@ export class ThreadController {
       return thread;
     } catch (error) {
       console.log(`🔴 [ThreadController] [createThread] error:`, error);
+      throw error;
+    }
+  }
+
+  @Sse('stream-message')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Stream a message response for a given question and thread' })
+  @ApiResponse({
+    status: 200,
+    description: 'Stream of message chunks',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Thread not found'
+  })
+  streamMessage(
+    @Body() streamMessageDto: StreamMessageDto,
+    @CurrentUserId() userId: string
+  ): Observable<{ data: string }> {
+    try {
+      console.log(`✅ [ThreadController] [streamMessage] streamMessageDto:`, streamMessageDto);
+      console.log(`✅ [ThreadController] [streamMessage] userId:`, userId);
+      
+      if (!userId) {
+        console.log(`🔴 [ThreadController] [streamMessage] userId is null or undefined`);
+        throw new UnauthorizedException('User not authenticated properly');
+      }
+      
+      return this.threadService.streamMessage(
+        userId, 
+        streamMessageDto.thread_id, 
+        streamMessageDto.question
+      ).pipe(
+        map(chunk => ({ data: chunk }))
+      );
+    } catch (error) {
+      console.log(`🔴 [ThreadController] [streamMessage] error:`, error);
+      throw error;
+    }
+  }
+
+  @Get()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get list of threads for current user' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of threads retrieved successfully',
+    type: ThreadListResponseDto
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized'
+  })
+  async getThreads(
+    @CurrentUserId() userId: string,
+    @Query() paginateDto: PaginateDto
+  ) {
+    try {
+      console.log(`✅ [ThreadController] [getThreads] userId:`, userId);
+      console.log(`✅ [ThreadController] [getThreads] paginateDto:`, paginateDto);
+      
+      if (!userId) {
+        console.log(`🔴 [ThreadController] [getThreads] userId is null or undefined`);
+        throw new UnauthorizedException('User not authenticated properly');
+      }
+      
+      const threads = await this.threadService.getThreadsByUserId(userId, paginateDto);
+      
+      console.log(`✅ [ThreadController] [getThreads] threads found:`, threads.pagination.total);
+      
+      return threads;
+    } catch (error) {
+      console.log(`🔴 [ThreadController] [getThreads] error:`, error);
+      throw error;
+    }
+  }
+
+  @Get(':threadId/messages')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get messages for a specific thread' })
+  @ApiParam({
+    name: 'threadId',
+    description: 'ID of the thread to get messages from',
+    type: String,
+    required: true
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Messages retrieved successfully',
+    type: MessageListResponseDto
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized'
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Thread not found or not owned by user'
+  })
+  async getThreadMessages(
+    @Param('threadId') threadId: string,
+    @CurrentUserId() userId: string,
+    @Query() paginateDto: PaginateDto
+  ) {
+    try {
+      console.log(`✅ [ThreadController] [getThreadMessages] threadId:`, threadId);
+      console.log(`✅ [ThreadController] [getThreadMessages] userId:`, userId);
+      console.log(`✅ [ThreadController] [getThreadMessages] paginateDto:`, paginateDto);
+      
+      if (!userId) {
+        console.log(`🔴 [ThreadController] [getThreadMessages] userId is null or undefined`);
+        throw new UnauthorizedException('User not authenticated properly');
+      }
+      
+      const messages = await this.threadService.getMessagesByThreadId(userId, threadId, paginateDto);
+      
+      console.log(`✅ [ThreadController] [getThreadMessages] messages found:`, messages.pagination.total);
+      
+      return messages;
+    } catch (error) {
+      console.log(`🔴 [ThreadController] [getThreadMessages] error:`, error);
       throw error;
     }
   }

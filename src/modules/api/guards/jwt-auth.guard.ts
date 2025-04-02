@@ -26,14 +26,11 @@ export class JwtAuthGuard implements CanActivate {
     const token = this.extractTokenFromHeader(request);
     
     // Chỉ bypass kiểm tra token cho endpoint /blogs
-    // if (
-    //   request.originalUrl === '/blogs' ||
-    //   (request.originalUrl.startsWith('/blogs?') &&
-    //     request.method === 'GET' &&
-    //     !token)
-    // ) {
-    //   return true;
-    // }
+    if (
+      process.env.APP_ENV === 'local'
+    ) {
+      return true;
+    }
     
     if (token) {
       try {
