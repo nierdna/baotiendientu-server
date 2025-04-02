@@ -1,21 +1,21 @@
 import axios, { AxiosError } from 'axios';
 import { ethers } from 'ethers';
 
-// Cấu hình
+// Configuration
 const API_URL = 'http://localhost:8000';
-const PRIVATE_KEY = '0x11f55b8b0615deb08729bfe57d3139573e183eb0bd41a958bca2b9bb33b8ba86'; // Thay thế bằng private key đã tạo từ script generate-wallet
+const PRIVATE_KEY = '0x11f55b8b0615deb08729bfe57d3139573e183eb0bd41a958bca2b9bb33b8ba86'; // Replace with private key created from generate-wallet script
 
-// Kiểm tra kết nối server trước khi thực hiện các thao tác chính
+// Check server connection before performing main operations
 async function checkServerConnection(): Promise<boolean> {
   try {
-    console.log(`🔍 Kiểm tra kết nối đến server ${API_URL}...`);
+    console.log(`🔍 Checking connection to server ${API_URL}...`);
     await axios.get(`${API_URL}/health`, { timeout: 5000 });
-    console.log('✅ Kết nối thành công đến server!');
+    console.log('✅ Successfully connected to server!');
     return true;
   } catch (error) {
-    console.error('❌ Không thể kết nối đến server. Hãy đảm bảo server đang chạy.');
+    console.error('❌ Cannot connect to server. Make sure the server is running.');
     if (axios.isAxiosError(error)) {
-      console.error(`🔴 Chi tiết lỗi: ${error.code || 'unknown'}`);
+      console.error(`🔴 Error details: ${error.code || 'unknown'}`);
     }
     return false;
   }
@@ -23,79 +23,79 @@ async function checkServerConnection(): Promise<boolean> {
 
 async function main() {
   try {
-    // Kiểm tra kết nối server
+    // Check server connection
     const isServerConnected = await checkServerConnection();
     if (!isServerConnected) {
-      console.error('❌ Hãy đảm bảo server đang chạy trước khi test API.');
+      console.error('❌ Make sure the server is running before testing the API.');
       process.exit(1);
     }
 
-    // Tạo ví từ private key
+    // Create wallet from private key
     const wallet = new ethers.Wallet(PRIVATE_KEY);
     const address = wallet.address;
 
-    console.log('🔍 Địa chỉ ví:', address);
+    console.log('🔍 Wallet address:', address);
 
-    // Gọi API lấy nonce
+    // Call API to get nonce
     const nonceUrl = `${API_URL}/auth/nonce?address=${address}`;
-    console.log(`🔄 Đang lấy nonce từ: ${nonceUrl}`);
+    console.log(`🔄 Getting nonce from: ${nonceUrl}`);
     
     const nonceResponse = await axios.get(nonceUrl);
     
-    console.log('📡 Nhận phản hồi:', JSON.stringify(nonceResponse.data));
+    console.log('📡 Received response:', JSON.stringify(nonceResponse.data));
     
     if (!nonceResponse.data.hasOwnProperty('nonce')) {
-      throw new Error('Phản hồi từ API không chứa trường nonce');
+      throw new Error('Response from API does not contain nonce field');
     }
     
     const nonce = nonceResponse.data.nonce;
-    console.log('✅ Lấy nonce thành công:', nonce);
+    console.log('✅ Successfully got nonce:', nonce);
 
-    // Tạo thông điệp để ký
+    // Create message to sign
     const message = `Sign this message to login with nonce: ${nonce}`;
-    console.log('📝 Thông điệp cần ký:', message);
+    console.log('📝 Message to sign:', message);
 
-    // Ký thông điệp
-    console.log('🔑 Đang ký thông điệp...');
+    // Sign message
+    console.log('🔑 Signing message...');
     const signature = await wallet.signMessage(message);
-    console.log('✅ Ký thông điệp thành công:', signature);
+    console.log('✅ Successfully signed message:', signature);
 
-    // Gọi API đăng nhập
+    // Call login API
     const loginUrl = `${API_URL}/auth/login`;
-    console.log(`🔄 Đang đăng nhập vào: ${loginUrl}`);
+    console.log(`🔄 Logging in to: ${loginUrl}`);
     
     const loginData = { address, signature };
-    console.log('📦 Dữ liệu gửi đi:', JSON.stringify(loginData));
+    console.log('📦 Data sent:', JSON.stringify(loginData));
     
     const loginResponse = await axios.post(loginUrl, loginData);
 
-    // Hiển thị kết quả
-    console.log('✅ Đăng nhập thành công!');
+    // Show results
+    console.log('✅ Login successful!');
     console.log('🔑 Access token:', loginResponse.data.access_token);
-    console.log('👤 Thông tin người dùng:', JSON.stringify(loginResponse.data.user, null, 2));
+    console.log('👤 User information:', JSON.stringify(loginResponse.data.user, null, 2));
 
     return loginResponse.data;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      console.error('🔴 Lỗi API:', error.message);
+      console.error('🔴 API Error:', error.message);
       console.error('🔗 URL:', error.config?.url);
       console.error('📋 Status:', error.response?.status);
       console.error('📄 Response:', JSON.stringify(error.response?.data || {}, null, 2));
     } else if (error instanceof Error) {
-      console.error('🔴 Lỗi:', error.message);
+      console.error('🔴 Error:', error.message);
     } else {
-      console.error('🔴 Lỗi không xác định:', error);
+      console.error('🔴 Unknown error:', error);
     }
     throw error;
   }
 }
 
-// Chạy script
+// Run script
 main()
   .then((result) => {
-    console.log('✨ Script hoàn thành thành công!');
+    console.log('✨ Script completed successfully!');
   })
   .catch((error) => {
-    console.error('💥 Script thất bại!');
+    console.error('💥 Script failed!');
     process.exit(1);
   });

@@ -1,44 +1,44 @@
 # Blink Chat Backend - Test Scripts
 
-Scripts để test các API của Blink Chat Backend.
+Scripts to test the APIs of Blink Chat Backend.
 
-## Cài đặt
+## Installation
 
 ```bash
 cd scripts
 npm install
 ```
 
-## Sử dụng
+## Usage
 
-### 1. Tạo ví Ethereum mới để test
+### 1. Create a new Ethereum wallet for testing
 
 ```bash
 npm run generate-wallet
 ```
 
-Script này sẽ tạo một ví Ethereum mới, bao gồm:
+This script will create a new Ethereum wallet, including:
 - Private key
-- Địa chỉ ví (address)
+- Wallet address
 - Mnemonic phrase
 
-Copy private key đã tạo vào file `test-auth-api.ts` để dùng cho bước tiếp theo.
+Copy the generated private key to the `test-auth-api.ts` file for the next step.
 
-### 2. Test API đăng nhập bằng Binance Wallet
+### 2. Test login API with Binance Wallet
 
 ```bash
 npm run test-auth
 ```
 
-Script này sẽ:
-1. Tạo ví từ private key đã cấu hình
-2. Gọi API `/auth/nonce` để lấy nonce
-3. Ký thông điệp chứa nonce bằng private key
-4. Gọi API `/auth/login` để đăng nhập
-5. Hiển thị token JWT và thông tin người dùng nhận được
+This script will:
+1. Create a wallet from the configured private key
+2. Call the `/auth/nonce` API to get a nonce
+3. Sign a message containing the nonce with the private key
+4. Call the `/auth/login` API to log in
+5. Display the JWT token and user information received
 
-## Lưu ý
+## Notes
 
-- Đảm bảo server đang chạy trước khi test
-- Mặc định API URL là `http://localhost:3000`, nếu cần thay đổi, sửa trong file `test-auth-api.ts`
-- Các ví tạo ra chỉ dùng cho mục đích test, không nên dùng cho các môi trường thật 
+- Ensure the server is running before testing
+- By default, the API URL is `http://localhost:3000`, if needed, change it in the `test-auth-api.ts` file
+- The created wallets are for testing purposes only, do not use them in production environments 
