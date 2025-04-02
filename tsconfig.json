@@ -27,7 +27,10 @@
       "@/shared/*": ["shared/*"],
       "@/worker/*": ["modules/worker/*"],
       "@/business/*": ["modules/business/*"],
-      "@/queue/*": ["modules/queue/*"]
+      "@/queue/*": ["modules/queue/*"],
+      "@nestjs/passport": ["./node_modules/@nestjs/passport"],
+      "passport-jwt": ["./node_modules/passport-jwt"],
+      "ethers": ["./node_modules/ethers"]
     }
   },
   "include": ["src"]

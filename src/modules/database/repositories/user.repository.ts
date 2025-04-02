@@ -1,21 +1,21 @@
 import { DataSource, Repository } from 'typeorm';
+import { User } from '../entities/user.entity';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { UserEntity } from '@/database/entities';
 
-export class UserRepository extends Repository<UserEntity> {
+export class UserRepository extends Repository<User> {
   constructor(@InjectDataSource() private dataSource: DataSource) {
-    super(UserEntity, dataSource.createEntityManager());
+    super(User, dataSource.createEntityManager());
   }
-  async findOneById(
-    id: string,
-    relations: 'twitter_user'[] = [],
-  ): Promise<UserEntity> {
-    let query = this.createQueryBuilder('user').where('user.id = :id', {
-      id,
-    });
-    for (const relation of relations) {
-      query = query.leftJoinAndSelect(`user.${relation}`, relation);
-    }
-    return query.limit(1).getOne();
+
+  async findByEmail(email: string): Promise<User | null> {
+    return this.findOne({ where: { email } });
+  }
+
+  async findByUsername(username: string): Promise<User | null> {
+    return this.findOne({ where: { username } });
+  }
+
+  async findByAddress(address: string): Promise<User | null> {
+    return this.findOne({ where: { address } });
   }
 }

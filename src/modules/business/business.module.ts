@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
-import { DatabaseModule } from '@/database';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from './auth/auth.module';
+import { DatabaseModule } from '../database/database.module';
 
 @Module({
-  imports: [DatabaseModule],
-  providers: [],
-  exports: [],
+  imports: [DatabaseModule, AuthModule],
+  exports: [AuthModule],
 })
 export class BusinessModule {}

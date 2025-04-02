@@ -2,16 +2,16 @@ import { Module } from '@nestjs/common';
 import { configDb } from './configs';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity } from '@/database/entities';
-import { AdminConfigRepository, UserRepository } from './repositories';
+import { User, Thread, Message } from './entities';
+import { AdminConfigRepository, UserRepository, ThreadRepository, MessageRepository } from './repositories';
 import { AdminConfigEntity } from './entities/admin-config.entity';
 import { SeedDatabase } from './seeders/seed.database';
 
-const repositories = [UserRepository, AdminConfigRepository];
+const repositories = [UserRepository, ThreadRepository, MessageRepository, AdminConfigRepository];
 
 const services = [];
 
-const entities = [UserEntity, AdminConfigEntity];
+const entities = [User, Thread, Message, AdminConfigEntity];
 
 @Module({
   imports: [
