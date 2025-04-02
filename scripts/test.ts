@@ -17,7 +17,7 @@ import axios from 'axios';
     },
   })
     .then((response) => {
-      response.data.on('data', (chunk) => {
+      response.data.on('data', (chunk: any) => {
         console.log('====> data:', chunk.toString());
       });
 

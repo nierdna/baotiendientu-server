@@ -7,8 +7,10 @@ alwaysApply: true
 
 ## Quy tắc chung
 - Tất cả các endpoint phải được đặt tên theo quy tắc kebab-case (a-b).
+- Tất cả các endpoint phải có tài liệu swagger 
 - Không được sử dụng camelCase (aB) hoặc các ký tự đặc biệt.
 - Không sử dụng các tiền tố HTTP verb như get, post, put, delete, update trong tên endpoint.
+
 
 ## Ví dụ
 - Đúng: `user-profile`, `data`, `user-info`

@@ -18,17 +18,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    // payload.sub là id của user từ token
     const user = await this.userRepository.findOne({
       where: { id: payload.sub },
     });
 
-    // Loại bỏ các thông tin nhạy cảm
     if (user) {
       return {
         id: user.id,
         username: user.username,
-        email: user.email,
         address: user.address,
       };
     }

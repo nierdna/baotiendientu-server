@@ -19,8 +19,7 @@ export class AuthService {
     if (!user) {
       user = new User();
       user.address = address;
-      user.username = `user_${address.substring(0, 6)}`;
-      user.email = `${address.substring(0, 6)}@placeholder.com`;
+      user.username = `${address.substring(0, 6)}`;
       user.nonce = Math.floor(Math.random() * 1000000);
       await this.userRepository.save(user);
     } else {
@@ -64,7 +63,6 @@ export class AuthService {
         user: {
           id: user.id,
           username: user.username,
-          email: user.email,
           address: user.address,
         },
       };
