@@ -3,46 +3,72 @@ description:
 globs: 
 alwaysApply: true
 ---
+---
+description: 
+globs: 
+alwaysApply: true
+---
 Rule Name: common.mdc
 Description: 
-# Quy tắc ngôn ngữ
-- Tất cả comment trong code phải dùng tiếng Anh
-- Mọi thông báo lỗi trong hệ thống phải sử dụng tiếng Anh
-- Dữ liệu trả về từ API/functions phải là tiếng Anh
-- Trao đổi với người dùng sử dụng tiếng Việt
+# Language Rules
+- All code comments must be in English
+- All system error messages must be in English
+- Data returned from API/functions must be in English
+- User communication should be in English
 
-# Quy tắc logging
-- Mọi console phải có chú thích rõ ràng theo định dạng:
-  console.log(`[icon] [tên_class] [tên_function] [tên_biến]:`, biến);
+# Logging Rules
+- All console logs must have clear annotations in the format:
+  console.log(`[icon] [class_name] [function_name] [variable_name]:`, variable);
   
-- Icon gợi ý:
-  * 🔍 - Tìm kiếm/Truy vấn
-  * ⚠️ - Cảnh báo
-  * 🔴 - Lỗi
-  * ✅ - Thành công
-  * 🔄 - Đang xử lý
+- Suggested icons:
+  * 🔍 - Search/Query
+  * ⚠️ - Warning
+  * 🔴 - Error
+  * ✅ - Success
+  * 🔄 - Processing
 
-# Quy tắc cấu trúc code
-- Mỗi chức năng phải được đóng gói thành function riêng biệt
-- Một function không được vượt quá 300 từ
-- Function phải có khả năng tái sử dụng cao
-- Mỗi function chỉ thực hiện một nhiệm vụ cụ thể
-- Đặt tên biến/hàm mô tả rõ chức năng
-- Tuân thủ nguyên tắc SOLID và DRY:
+# Code Structure Rules
+- Each functionality must be encapsulated in a separate function
+- A function should not exceed 300 words
+- Functions must have high reusability
+- Each function should perform only one specific task
+- Name variables/functions to clearly describe their purpose
+- Adhere to SOLID and DRY principles:
   * SOLID:
-    - S (Single Responsibility): Mỗi class chỉ có một lý do để thay đổi
-    - O (Open/Closed): Mở rộng class mà không sửa đổi code hiện có
-    - L (Liskov Substitution): Class con có thể thay thế class cha
-    - I (Interface Segregation): Nhiều interface chuyên biệt tốt hơn một interface lớn
-    - D (Dependency Inversion): Phụ thuộc vào abstraction, không vào implementation
-  * DRY (Don't Repeat Yourself): Tránh lặp lại code, mỗi logic chỉ viết một lần
+    - S (Single Responsibility): Each class should have only one reason to change
+    - O (Open/Closed): Extend classes without modifying existing code
+    - L (Liskov Substitution): Child classes can replace parent classes
+    - I (Interface Segregation): Multiple specialized interfaces are better than one large interface
+    - D (Dependency Inversion): Depend on abstractions, not implementations
+  * DRY (Don't Repeat Yourself): Avoid code duplication, write each logic only once
 
-# Quy tắc xử lý lỗi
-- Mọi hàm thao tác dữ liệu phải có try/catch
-- Ghi log đầy đủ thông tin lỗi
-- Trả về message lỗi rõ ràng, dễ hiểu cho người dùng
+# API Response Format Rules
+- All API responses must follow a common format structure
+- Pagination responses must also adhere to the standard format
+- Standard response format:
+  ```json
+  {
+    "statusCode": 200, // HTTP status code
+    "message": "Success message", // Human-readable message
+    "data": {}, // Actual response data (object, array, or primitive)
+    "pagination": { // Optional, include only for paginated responses
+      "page": 1,
+      "limit": 10,
+      "totalItems": 100,
+      "totalPages": 10
+    },
+    "timestamp": "2023-06-15T10:30:00Z" // ISO timestamp of the response
+  }
+  ```
+- Error responses must follow the same structure with appropriate status codes and error messages
+- Never return raw data directly without following this structure
 
-# Quy tắc bảo mật
-- Không lưu credential trong code
-- Sử dụng biến môi trường cho thông tin nhạy cảm
-- Validate dữ liệu đầu vào
+# Error Handling Rules
+- All data manipulation functions must have try/catch
+- Log complete error information
+- Return clear, understandable error messages to users
+
+# Security Rules
+- Do not store credentials in code
+- Use environment variables for sensitive information
+- Validate input data

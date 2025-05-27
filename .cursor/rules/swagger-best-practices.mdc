@@ -3,28 +3,38 @@ description:
 globs: 
 alwaysApply: true
 ---
-# Quy tắc và Tiêu chuẩn Swagger
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Swagger Rules and Standards
 
-## Tiêu chuẩn chung
+## General Standards
 
-1. **Đầy đủ và Chi tiết**
-   - Mọi API phải có đầy đủ tài liệu Swagger
-   - Mỗi endpoint phải có mô tả chi tiết và rõ ràng
-   - Mỗi tham số đầu vào và đầu ra phải được mô tả
+1. **Complete and Detailed**
+   - All APIs must have complete Swagger documentation
+   - Each endpoint must have detailed and clear descriptions
+   - Each input and output parameter must be described
 
-2. **Nhất quán về Ngôn ngữ**
-   - Mọi mô tả phải bằng tiếng Anh theo quy tắc MDC
-   - Giữ nhất quán trong từ vựng và phong cách viết
+2. **Language Consistency**
+   - All descriptions must be in English according to MDC rules
+   - Maintain consistency in vocabulary and writing style
 
-3. **Ví dụ và Giá trị mẫu**
-   - Cung cấp ví dụ cho tất cả thuộc tính 
-   - Đảm bảo ví dụ có ý nghĩa và thực tế
+3. **Examples and Sample Values**
+   - Provide examples for all properties
+   - Ensure examples are meaningful and realistic
 
-## Mẫu tài liệu Controller
+4. **Standardized Response Format**
+   - All API responses must follow the common format defined in common.mdc
+   - Paginated responses must include pagination information in the standard format
+   - Use generic types for response DTOs to ensure proper documentation
+
+## Controller Documentation Template
 
 ```typescript
-@ApiTags('Resource Name') // Sử dụng PascalCase cho tags
-@Controller('resource-path') // Tuân thủ kebab-case theo quy tắc API
+@ApiTags('Resource Name') // Use PascalCase for tags
+@Controller('resource-path') // Follow kebab-case according to API rules
 export class ResourceController {
   
   @Get()
@@ -49,7 +59,7 @@ export class ResourceController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Resources retrieved successfully',
-    type: ResourceListResponseDto
+    type: StandardResponseDto<ResourceListResponseDto>
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
@@ -61,17 +71,17 @@ export class ResourceController {
 }
 ```
 
-## Quy tắc đặt tên
+## Naming Rules
 
 1. **DTO Classes**
-   - Đặt tên rõ ràng về mục đích: `CreateUserDto`, `UpdateUserResponseDto`
-   - Sử dụng hậu tố `Dto` cho tất cả các classes
+   - Name clearly based on purpose: `CreateUserDto`, `UpdateUserResponseDto`
+   - Use the `Dto` suffix for all classes
 
 2. **API Tags**
-   - Sử dụng danh từ số ít: 'User', 'Token', 'Auth'
-   - Sử dụng PascalCase: 'HealthCheck', không phải 'healthCheck' hoặc 'health-check'
+   - Use singular nouns: 'User', 'Token', 'Auth'
+   - Use PascalCase: 'HealthCheck', not 'healthCheck' or 'health-check'
 
-## Mẫu tài liệu DTO
+## DTO Documentation Template
 
 ```typescript
 export class CreateResourceDto {
@@ -107,31 +117,98 @@ export class CreateResourceDto {
 }
 ```
 
-## Danh sách kiểm tra chất lượng
+## Standard Response DTO Template
 
-Trước khi commit code, hãy đảm bảo:
+```typescript
+export class StandardResponseDto<T> {
+  @ApiProperty({
+    description: 'HTTP status code',
+    example: 200
+  })
+  statusCode: number;
 
-1. ✅ Tất cả endpoints đều có `@ApiTags` và `@ApiOperation`
-2. ✅ Tất cả methods trong controllers đều có `@ApiResponse` với các status codes thích hợp
-3. ✅ Tất cả parameters, body và query đều được mô tả đầy đủ
-4. ✅ Tất cả DTOs đều có `@ApiProperty` cho mỗi thuộc tính
-5. ✅ Các ví dụ đều có ý nghĩa và đại diện cho dữ liệu thực tế
-6. ✅ Mô tả rõ ràng và dễ hiểu
+  @ApiProperty({
+    description: 'Response message',
+    example: 'Resources retrieved successfully'
+  })
+  message: string;
 
-## Lưu ý về bảo mật
+  @ApiProperty({
+    description: 'Response data'
+  })
+  data: T;
 
-1. Không bao giờ bao gồm thông tin nhạy cảm (mật khẩu, tokens, keys) trong ví dụ
-2. Sử dụng `@ApiBearerAuth()` cho tất cả endpoint yêu cầu xác thực
-3. Sử dụng `@ApiSecurity()` nếu cần xác thực tùy chỉnh
+  @ApiPropertyOptional({
+    description: 'Pagination information (only included for paginated responses)',
+    example: {
+      page: 1,
+      limit: 10,
+      totalItems: 100,
+      totalPages: 10
+    }
+  })
+  pagination?: PaginationDto;
 
-## Các decorator Swagger thường dùng
+  @ApiProperty({
+    description: 'Response timestamp',
+    example: '2023-06-15T10:30:00Z'
+  })
+  timestamp: string;
+}
 
-| Decorator | Mục đích | Vị trí sử dụng |
-|-----------|----------|----------------|
-| @ApiTags | Nhóm API theo chức năng | Controller |
-| @ApiOperation | Mô tả hoạt động của endpoint | Method |
-| @ApiResponse | Mô tả response có thể trả về | Method |
-| @ApiProperty | Mô tả thuộc tính trong DTO | Property |
-| @ApiQuery | Mô tả query parameter | Method |
-| @ApiParam | Mô tả path parameter | Method |
-| @ApiBearerAuth | Chỉ định endpoint yêu cầu Bearer token | Method/Controller | 
+export class PaginationDto {
+  @ApiProperty({
+    description: 'Current page number',
+    example: 1
+  })
+  page: number;
+
+  @ApiProperty({
+    description: 'Items per page',
+    example: 10
+  })
+  limit: number;
+
+  @ApiProperty({
+    description: 'Total number of items',
+    example: 100
+  })
+  totalItems: number;
+
+  @ApiProperty({
+    description: 'Total number of pages',
+    example: 10
+  })
+  totalPages: number;
+}
+```
+
+## Quality Checklist
+
+Before committing code, ensure:
+
+1. ✅ All endpoints have `@ApiTags` and `@ApiOperation`
+2. ✅ All methods in controllers have `@ApiResponse` with appropriate status codes
+3. ✅ All parameters, body, and query are fully described
+4. ✅ All DTOs have `@ApiProperty` for each property
+5. ✅ Examples are meaningful and representative of actual data
+6. ✅ Descriptions are clear and easy to understand
+7. ✅ All responses follow the standard response format
+
+## Security Notes
+
+1. Never include sensitive information (passwords, tokens, keys) in examples
+2. Use `@ApiBearerAuth()` for all endpoints requiring authentication
+3. Use `@ApiSecurity()` if custom authentication is needed
+
+## Commonly Used Swagger Decorators
+
+| Decorator | Purpose | Usage Location |
+|-----------|---------|----------------|
+| @ApiTags | Group APIs by functionality | Controller |
+| @ApiOperation | Describe endpoint operation | Method |
+| @ApiResponse | Describe possible response | Method |
+| @ApiProperty | Describe property in DTO | Property |
+| @ApiQuery | Describe query parameter | Method |
+| @ApiParam | Describe path parameter | Method |
+| @ApiBearerAuth | Specify endpoint requiring Bearer token | Method/Controller | 

@@ -3,71 +3,84 @@ description:
 globs: 
 alwaysApply: true
 ---
-# Kiểm tra việc triển khai Swagger
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Swagger Implementation Checklist
 
-## Danh sách Controller cần triển khai
+## List of Controllers to Implement
 
 - [x] HealthController
 - [x] AuthController
 - [x] UserController
-- [ ] Các controller mới cần được thêm vào danh sách này
+- [ ] New controllers should be added to this list
 
-## Kiểm tra từng Controller
+## Controller Checks
 
 ### HealthController
-- [x] Thêm decorator `@ApiTags`
-- [x] Thêm `@ApiOperation` cho mỗi endpoint
-- [x] Thêm `@ApiResponse` cho mỗi endpoint
+- [x] Add `@ApiTags` decorator
+- [x] Add `@ApiOperation` for each endpoint
+- [x] Add `@ApiResponse` for each endpoint
+- [ ] Ensure responses use StandardResponseDto format
 
 ### AuthController
-- [x] Thêm decorator `@ApiTags` 
-- [x] Thêm `@ApiOperation` cho mỗi endpoint
-- [x] Thêm `@ApiResponse` cho mỗi endpoint
-- [x] Thêm `@ApiQuery` hoặc `@ApiParam` nếu cần
-- [x] Thêm `@ApiBearerAuth` cho các API yêu cầu xác thực
+- [x] Add `@ApiTags` decorator
+- [x] Add `@ApiOperation` for each endpoint
+- [x] Add `@ApiResponse` for each endpoint
+- [x] Add `@ApiQuery` or `@ApiParam` if needed
+- [x] Add `@ApiBearerAuth` for APIs requiring authentication
+- [ ] Ensure responses use StandardResponseDto format
 
 ### UserController
-- [x] Thêm decorator `@ApiTags`
-- [x] Thêm `@ApiOperation` cho mỗi endpoint
-- [x] Thêm `@ApiResponse` cho mỗi endpoint
-- [x] Thêm `@ApiBearerAuth` cho các API yêu cầu xác thực
+- [x] Add `@ApiTags` decorator
+- [x] Add `@ApiOperation` for each endpoint
+- [x] Add `@ApiResponse` for each endpoint
+- [x] Add `@ApiBearerAuth` for APIs requiring authentication
+- [ ] Ensure responses use StandardResponseDto format
 
-## Kiểm tra DTOs
+## DTO Checks
 
 ### Auth DTOs
-- [x] Mỗi thuộc tính có `@ApiProperty` với mô tả
-- [x] Thêm ví dụ cho mỗi thuộc tính
-- [x] Đảm bảo các validator có đầy đủ
+- [x] Each property has `@ApiProperty` with description
+- [x] Examples added for each property
+- [x] Ensure validators are complete
 
 ### User DTOs
-- [ ] Mỗi thuộc tính có `@ApiProperty` với mô tả
-- [ ] Thêm ví dụ cho mỗi thuộc tính
-- [ ] Đảm bảo các validator có đầy đủ
+- [ ] Each property has `@ApiProperty` with description
+- [ ] Examples added for each property
+- [ ] Ensure validators are complete
 
-## Kiểm tra Response DTOs
+## Response DTO Checks
 
-- [x] Các response DTOs có đầy đủ decorator
-- [ ] Sử dụng `@ApiBaseResponse` nếu phù hợp
-- [ ] Đặt ví dụ phù hợp cho mỗi response
+- [x] Response DTOs have complete decorators
+- [ ] Use `@ApiBaseResponse` if appropriate
+- [ ] Set suitable examples for each response
+- [ ] Implement StandardResponseDto for all API responses
+- [ ] Include proper pagination in StandardResponseDto where needed
 
-## Kiểm tra Swagger UI
+## Swagger UI Checks
 
-- [ ] Kiểm tra UI tại `/docs` endpoint
-- [ ] Đảm bảo tất cả API đều hiển thị đúng
-- [ ] Đảm bảo mỗi API đều có thể thử nghiệm
-- [ ] Kiểm tra chức năng xác thực Bearer token
+- [ ] Check UI at `/docs` endpoint
+- [ ] Ensure all APIs are displayed correctly
+- [ ] Ensure each API can be tested
+- [ ] Check Bearer token authentication functionality
+- [ ] Verify standardized response format appears correctly in documentation
 
-## Một số lưu ý quan trọng
+## Important Notes
 
-1. Mọi API mới phải được thêm tài liệu Swagger đầy đủ
-2. Đảm bảo cung cấp ví dụ thực tế và hữu ích
-3. Swagger phải luôn đồng bộ với code thực tế
-4. Không đưa thông tin nhạy cảm vào ví dụ
-5. Các endpoint phải tuân thủ quy tắc đặt tên kebab-case
+1. All new APIs must have complete Swagger documentation
+2. Ensure examples are practical and useful
+3. Swagger must always be synchronized with actual code
+4. Do not include sensitive information in examples
+5. Endpoints must follow kebab-case naming rules
+6. All API responses must use the standard response format
 
-## Hướng dẫn thử nghiệm
+## Testing Guidelines
 
-1. Chạy server trong môi trường development
-2. Truy cập `/docs` để mở Swagger UI
-3. Thử nghiệm các API trong UI
-4. Đảm bảo các request mẫu hoạt động đúng 
+1. Run server in development environment
+2. Access `/docs` to open Swagger UI
+3. Test APIs in the UI
+4. Ensure sample requests work correctly
+5. Verify all responses follow the standard format 

@@ -3,60 +3,97 @@ description:
 globs: 
 alwaysApply: true
 ---
-# Hướng dẫn Swagger cho API
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Swagger Guide for API
 
-## Quy tắc chung
-- Tất cả API phải có đầy đủ tài liệu Swagger
-- Mỗi endpoint phải có mô tả rõ ràng về chức năng và các response có thể trả về
-- DTOs phải có đầy đủ các decorator `@ApiProperty` cho tất cả các thuộc tính
+## General Rules
+- All APIs must have complete Swagger documentation
+- Each endpoint must have a clear description of its functionality and possible responses
+- DTOs must have all `@ApiProperty` decorators for all properties
+- All API responses must follow the common response format defined in common.mdc
 
-## Cấu trúc tài liệu Swagger cho Controller
+## Standard Response Format
+
+All API responses must be documented to follow this standard format:
 
 ```typescript
-@ApiTags('Tên nhóm API')  // Phân nhóm API trong Swagger UI
+export class StandardResponseDto<T> {
+  @ApiProperty({ example: 200 })
+  statusCode: number;
+
+  @ApiProperty({ example: 'Operation successful' })
+  message: string;
+
+  @ApiProperty({ description: 'The actual data returned by the API' })
+  data: T;
+
+  @ApiProperty({
+    description: 'Pagination information, included only for paginated responses',
+    required: false
+  })
+  pagination?: {
+    page: number;
+    limit: number;
+    totalItems: number;
+    totalPages: number;
+  };
+
+  @ApiProperty({ example: '2023-06-15T10:30:00Z' })
+  timestamp: string;
+}
+```
+
+## Swagger Documentation Structure for Controllers
+
+```typescript
+@ApiTags('API Group Name')  // Group APIs in Swagger UI
 @Controller('endpoint-path')
 export class ExampleController {
   
   @Get('resource')
-  @ApiOperation({ summary: 'Mô tả ngắn gọn về chức năng của API' })
+  @ApiOperation({ summary: 'Brief description of API functionality' })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Mô tả kết quả thành công',
-    type: ResponseDTO  // DTO cho response (nếu có)
+    description: 'Description of successful result',
+    type: StandardResponseDto<ResourceDTO>  // Using standard response format
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
-    description: 'Mô tả lỗi Bad Request'
+    description: 'Description of Bad Request error'
   })
-  // Các status code khác nếu có
+  // Other status codes if needed
   async getResource() {
     // implementation
   }
 
-  // Nếu cần xác thực JWT
+  // If JWT authentication is required
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()  // Hiển thị biểu tượng khóa và cho phép nhập token trong Swagger UI
+  @ApiBearerAuth()  // Displays lock icon and allows token input in Swagger UI
   @Post('resource')
-  // ApiOperation và ApiResponse tương tự như trên
+  // ApiOperation and ApiResponse similar to above
 }
 ```
 
-## Tài liệu cho DTOs
+## Documentation for DTOs
 
-Mỗi DTO phải có đầy đủ `@ApiProperty` cho tất cả các thuộc tính:
+Each DTO must have complete `@ApiProperty` for all properties:
 
 ```typescript
 export class ExampleDTO {
   @ApiProperty({
-    description: 'Mô tả chi tiết về thuộc tính',
-    example: 'Giá trị mẫu',
-    required: true  // mặc định là true
+    description: 'Detailed description of the property',
+    example: 'Sample value',
+    required: true  // default is true
   })
   @IsString()  // Class validator decorators
   property: string;
 
-  @ApiPropertyOptional({  // Nếu thuộc tính không bắt buộc
-    description: 'Mô tả chi tiết về thuộc tính',
+  @ApiPropertyOptional({  // If property is not required
+    description: 'Detailed description of the property',
     example: 123,
     type: Number
   })
@@ -64,40 +101,40 @@ export class ExampleDTO {
 }
 ```
 
-## Các decorators Swagger quan trọng
+## Important Swagger Decorators
 
-1. **@ApiTags(tag)**: Phân nhóm API trong UI
-2. **@ApiOperation(options)**: Mô tả chi tiết về hoạt động của API
-3. **@ApiResponse(options)**: Mô tả response có thể trả về
-4. **@ApiBearerAuth()**: Chỉ định API yêu cầu xác thực Bearer token
-5. **@ApiParam(options)**: Mô tả parameter trong URL
-6. **@ApiQuery(options)**: Mô tả query parameter
-7. **@ApiProperty(options)**: Mô tả thuộc tính trong DTO
-8. **@ApiPropertyOptional(options)**: Mô tả thuộc tính không bắt buộc
+1. **@ApiTags(tag)**: Group APIs in UI
+2. **@ApiOperation(options)**: Detailed description of API operation
+3. **@ApiResponse(options)**: Describe possible responses
+4. **@ApiBearerAuth()**: Specify API requiring Bearer token authentication
+5. **@ApiParam(options)**: Describe parameter in URL
+6. **@ApiQuery(options)**: Describe query parameter
+7. **@ApiProperty(options)**: Describe property in DTO
+8. **@ApiPropertyOptional(options)**: Describe optional property
 
-## Responses tùy chỉnh
+## Custom Responses
 
-Sử dụng `@ApiBaseResponse` đã định nghĩa sẵn trong dự án để tạo response chuẩn:
+Use `@ApiBaseResponse` predefined in the project to create standard responses:
 
 ```typescript
 @Get('resource')
 @ApiBaseResponse(ResourceDTO, {
-  description: 'Lấy thông tin resource thành công',
-  isArray: false  // true nếu trả về mảng
+  description: 'Successfully retrieved resource information',
+  isArray: false  // true if returning an array
 })
 async getResource() {
   // implementation
 }
 ```
 
-## Tài liệu cho các request yêu cầu xác thực
+## Documentation for Authentication-Required Requests
 
 ```typescript
 @UseGuards(JwtAuthGuard)
-@ApiBearerAuth()  // Thêm decorator này
+@ApiBearerAuth()  // Add this decorator
 @Get('protected-resource')
-@ApiOperation({ summary: 'API yêu cầu xác thực' })
-// Các ApiResponse...
+@ApiOperation({ summary: 'API requiring authentication' })
+// ApiResponse...
 async getProtectedResource() {
   // implementation
 }
@@ -105,12 +142,12 @@ async getProtectedResource() {
 
 ## Swagger UI
 
-Swagger UI được cấu hình trong `main.ts` và có thể truy cập tại `/docs` khi chạy ứng dụng ở môi trường không phải production.
+Swagger UI is configured in `main.ts` and can be accessed at `/docs` when running the application in non-production environments.
 
-## Kiểm tra
+## Verification
 
-Sau khi thêm tài liệu Swagger, hãy kiểm tra:
-1. Tất cả các endpoints đều hiển thị trong Swagger UI
-2. Mô tả và ví dụ rõ ràng, dễ hiểu
-3. Có thể gửi request thử nghiệm trực tiếp từ Swagger UI
-4. Các status code và response đúng với thực tế 
+After adding Swagger documentation, check:
+1. All endpoints are displayed in Swagger UI
+2. Descriptions and examples are clear and understandable
+3. Test requests can be sent directly from Swagger UI
+4. Status codes and responses match reality 
