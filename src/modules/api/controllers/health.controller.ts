@@ -1,4 +1,4 @@
-import { UserRepository } from '@/database/repositories';
+import { AdminConfigRepository } from '@/database/repositories';
 import { ResponseMessage } from '@/shared/decorators/response-message.decorator';
 import { ApiBaseResponse } from '@/shared/swagger/decorator/api-response.decorator';
 import {
@@ -14,7 +14,7 @@ import { FormatResponseInterceptor } from '../interceptors';
 @ApiTags('Health')
 @Controller('health')
 export class HealthController {
-  constructor(private userRepository: UserRepository) {}
+  constructor(private adminConfigRepository: AdminConfigRepository) {}
 
   funErr() {
     console.log('Test error ');
@@ -47,7 +47,7 @@ export class HealthController {
     description: 'Database connection failed',
   })
   async checkDB() {
-    return await this.userRepository.findOne({ where: {} });
+    return await this.adminConfigRepository.findOne({ where: {} });
   }
 
   @Get('throw')

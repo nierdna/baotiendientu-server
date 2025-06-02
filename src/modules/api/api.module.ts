@@ -1,6 +1,6 @@
 import { Module, OnApplicationBootstrap } from '@nestjs/common';
 import { DatabaseModule } from '@/database';
-import { HealthController, AuthController, UserController } from '@/api/controllers';
+import { HealthController } from '@/api/controllers';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { QueueModule } from '@/queue/queue.module';
@@ -13,7 +13,7 @@ import { configCache } from './configs/cache';
 import { HttpCacheInterceptor } from './interceptors';
 import { BusinessModule } from '@/business/business.module';
 
-const controllers = [HealthController, AuthController, UserController];
+const controllers = [HealthController];
 
 @Module({
   imports: [

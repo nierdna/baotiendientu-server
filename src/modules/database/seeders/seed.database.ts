@@ -1,10 +1,10 @@
 import { Inject, Injectable, OnApplicationBootstrap } from '@nestjs/common';
-import { UserRepository } from '../repositories';
+import { AdminConfigRepository } from '../repositories';
 
 @Injectable()
 export class SeedDatabase implements OnApplicationBootstrap {
-  @Inject(UserRepository)
-  private readonly userRepository: UserRepository;
+  @Inject(AdminConfigRepository)
+  private readonly adminConfigRepository: AdminConfigRepository;
 
   constructor() {}
 
