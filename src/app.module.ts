@@ -7,18 +7,21 @@ const isApi = Boolean(Number(process.env.IS_API || 0));
 const isWorker = Boolean(Number(process.env.IS_WORKER || 0));
 
 let _modules = [];
+
 if (isApi) {
   _modules = [..._modules, ApiModule];
 }
+
 if (isWorker) {
   _modules = [..._modules, WorkerModule];
 }
+
 @Module({
   imports: [
     ..._modules,
     LoggerModule.forRoot({
       pinoHttp: {
-        level: process.env.APP_ENV === 'production' ? 'info' : 'debug',
+        level: 'info',
         transport: {
           target: 'pino-pretty',
           options: {

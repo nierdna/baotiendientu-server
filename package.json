@@ -34,6 +34,7 @@
     "@nestjs/swagger": "^7.0.4",
     "@nestjs/throttler": "^4.2.1",
     "@nestjs/typeorm": "^10.0.0",
+    "@nestjs/websockets": "^11.1.2",
     "axios": "1.4.0",
     "bull": "^4.11.3",
     "cache-manager": "^5.5.2",
@@ -50,6 +51,7 @@
     "pino-pretty": "^11.2.2",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
+    "socket.io": "^4.8.1",
     "typeorm": "^0.3.17",
     "uuid": "^11.0.3"
   },
