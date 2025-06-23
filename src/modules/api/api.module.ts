@@ -28,7 +28,10 @@ const controllers = [HealthController];
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => {
-        const urlRedis = `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}/${process.env.REDIS_DATABASE}`;
+        let urlRedis = `redis://${process.env.REDIS_HOST}:${process.env.REDIS_PORT}/${process.env.REDIS_DATABASE}?family=${process.env.REDIS_FAMILY}`;
+        if (process.env.REDIS_PASSWORD) {
+          urlRedis = `redis://${process.env.REDIS_USERNAME}:${process.env.REDIS_PASSWORD}@${process.env.REDIS_HOST}:${process.env.REDIS_PORT}/${process.env.REDIS_DATABASE}?family=${process.env.REDIS_FAMILY}`;
+        }
         return {
           ttl: configService.get('cache.api.cache_ttl'),
           store: (await redisStore({

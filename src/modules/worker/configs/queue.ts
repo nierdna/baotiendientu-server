@@ -6,4 +6,5 @@ export const configQueue = registerAs('queue', () => ({
   port: process.env.REDIS_PORT,
   database: process.env.REDIS_DATABASE,
   password: process.env.REDIS_PASSWORD,
+  family: process.env.REDIS_FAMILY || 0,
 }));
