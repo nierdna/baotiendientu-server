@@ -74,6 +74,13 @@ export class ProcessedArticleDto {
   title: string;
 
   @ApiProperty({
+    description: 'Article image URL',
+    example: 'https://coin68.com/images/bitcoin-analysis.jpg',
+    nullable: true
+  })
+  image: string | null;
+
+  @ApiProperty({
     description: 'Content processed by AI',
     example: '# Bitcoin tăng mạnh\n\nBitcoin đã có một tuần tăng trưởng mạnh mẽ...'
   })
@@ -179,6 +186,13 @@ export class AiProcessingResultDto {
   title: string;
 
   @ApiProperty({
+    description: 'Article image URL',
+    example: 'https://coin68.com/images/bitcoin-analysis.jpg',
+    nullable: true
+  })
+  image: string | null;
+
+  @ApiProperty({
     description: 'Clean content',
     example: '# Bitcoin tăng mạnh\n\nNội dung đã được AI xử lý và làm sạch...'
   })
@@ -192,7 +206,7 @@ export class AiProcessingResultDto {
   summary: string | null;
 
   @ApiProperty({
-    description: 'Extracted tags',
+    description: 'AI-extracted tags',
     example: ['bitcoin', 'cryptocurrency', 'analysis'],
     type: [String],
     nullable: true

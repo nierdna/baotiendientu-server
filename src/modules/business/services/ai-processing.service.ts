@@ -117,6 +117,40 @@ export class AiProcessingService {
                 $('h1').first().text().trim() || 
                 'Untitled Article';
 
+    // Extract image
+    let image: string | null = null;
+    const imageSelectors = [
+      'meta[property="og:image"]',
+      'meta[name="twitter:image"]',
+      'article img',
+      '.content img',
+      '.post-content img',
+      '.featured-image img',
+      'img'
+    ];
+
+    for (const selector of imageSelectors) {
+      const element = $(selector).first();
+      if (element.length > 0) {
+        let src = element.attr('content') || element.attr('src') || element.attr('data-src');
+        if (src && !src.includes('data:image/svg')) {
+          // Handle Next.js image URLs
+          if (src.includes('/_next/image/')) {
+            const urlMatch = src.match(/url=([^&]+)/);
+            if (urlMatch) {
+              src = decodeURIComponent(urlMatch[1]);
+            }
+          }
+          // Make absolute URL if relative
+          if (src.startsWith('/') && !src.startsWith('//')) {
+            src = 'https://coin68.com' + src;
+          }
+          image = src;
+          break;
+        }
+      }
+    }
+
     // Extract main content
     const contentSelectors = [
       'article',
@@ -159,6 +193,7 @@ export class AiProcessingService {
 
     return {
       title,
+      image,
       content,
       summary: null,
       tags: null,
@@ -189,7 +224,7 @@ export class AiProcessingService {
     // Use specialized financial editor prompt for Vietnamese
     if (language === ProcessLanguage.VI) {
       return `
-Bạn là một nhà báo tài chính chuyên nghiệp với 10+ năm kinh nghiệm.
+Bạn là một nhà báo tài chính chuyên nghiệm với 10+ năm kinh nghiệm.
 
 **NHIỆM VỤ**: Hãy viết lại hoàn toàn nội dung bài báo dưới đây thành một bài báo TÀI CHÍNH CHUYÊN NGHIỆP của riêng bạn, bằng tiếng Việt, CHI TIẾT và ĐẦY ĐỦ.
 
@@ -248,6 +283,7 @@ ${htmlContent.substring(0, 12000)} ${htmlContent.length > 12000 ? '...(truncated
 ĐỊNH DẠNG RESPONSE (JSON):
 {
   "title": "🔥 Tiêu đề hấp dẫn và chi tiết với emoji",
+  "image": "URL hình ảnh chính của bài viết (nếu có)",
   "content": "<h2>Tiêu đề chính</h2><p>Nội dung HTML chi tiết, đầy đủ với phân tích sâu...</p>",
   "summary": "Tóm tắt chi tiết 2-3 câu về nội dung chính",
   "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
@@ -338,6 +374,7 @@ ${htmlContent.substring(0, 12000)} ${htmlContent.length > 12000 ? '...(truncated
 RESPONSE FORMAT (JSON):
 {
   "title": "🔥 Engaging and detailed title with emoji",
+  "image": "Main article image URL (if available)",
   "content": "Comprehensive content in ${formatText} format with deep analysis...",
   "summary": "Detailed 2-3 sentence summary of main content",
   "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
@@ -373,6 +410,7 @@ RESPONSE:`;
         
         return {
           title: parsed.title || 'Untitled Article',
+          image: parsed.image || null,
           content: parsed.content || '',
           summary: parsed.summary || null,
           tags: Array.isArray(parsed.tags) ? parsed.tags : null,
@@ -407,6 +445,7 @@ RESPONSE:`;
 
     return {
       title,
+      image: null,
       content,
       summary,
       tags,

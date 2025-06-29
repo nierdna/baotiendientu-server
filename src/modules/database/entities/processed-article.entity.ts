@@ -13,6 +13,9 @@ export class ProcessedArticleEntity extends BaseEntity {
   @Column({ type: 'varchar', length: 500 })
   title: string;
 
+  @Column({ type: 'varchar', length: 1000, nullable: true })
+  image: string;
+
   @Column({ type: 'text', nullable: true })
   content: string;
 

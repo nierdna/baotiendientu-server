@@ -242,6 +242,7 @@ export class ArticleController {
         const processedArticleDto: ProcessedArticleDto = {
           id: existingArticle.id,
           title: existingArticle.title,
+          image: existingArticle.image,
           content: existingArticle.content,
           summary: existingArticle.summary,
           tags: existingArticle.tags,
@@ -295,6 +296,7 @@ export class ArticleController {
       
       const savedArticle = await this.processedArticleRepository.create({
         title: aiResult.title,
+        image: aiResult.image,
         content: aiResult.content,
         summary: aiResult.summary,
         tags: aiResult.tags,
@@ -323,6 +325,7 @@ export class ArticleController {
       const processedArticleDto: ProcessedArticleDto = {
         id: savedArticle.id,
         title: savedArticle.title,
+        image: savedArticle.image,
         content: savedArticle.content,
         summary: savedArticle.summary,
         tags: savedArticle.tags,

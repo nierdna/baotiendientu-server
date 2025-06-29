@@ -5,6 +5,7 @@ import { ProcessedArticleEntity } from '../entities/processed-article.entity';
 
 export interface CreateProcessedArticleData {
   title: string;
+  image?: string;
   content: string;
   summary?: string;
   tags?: string[];
