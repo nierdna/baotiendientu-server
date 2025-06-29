@@ -157,8 +157,8 @@ export class ScheduleService {
 
   onApplicationBootstrap() {
     this.logger.log('🔄 [ScheduleService] [onApplicationBootstrap] [scheduler_initialized]');
-    this.crawlCoin68Articles().then(() => {
-      this.logger.log('✅ [ScheduleService] [onApplicationBootstrap] [crawlCoin68Articles] [completed]');
-    });
+    // this.crawlCoin68Articles().then(() => {
+    //   this.logger.log('✅ [ScheduleService] [onApplicationBootstrap] [crawlCoin68Articles] [completed]');
+    // });
   }
 }

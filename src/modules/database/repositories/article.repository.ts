@@ -85,7 +85,7 @@ export class ArticleRepository {
         title: articleData.title,
         content: articleData.content || '',
         image: articleData.image || '',
-        url: articleData.url || '',
+        url: `https://coin68.com${articleData.url}`,
         date: articleData.date || '',
         category: articleData.category || '',
         source: 'coin68.com',
@@ -185,6 +185,71 @@ export class ArticleRepository {
       'viewCount',
       1
     );
+    return result.affected > 0;
+  }
+
+  /**
+   * Find articles that haven't been crawled for details
+   * @param limit - Maximum number of articles to return
+   * @returns Promise<ArticleEntity[]>
+   */
+  async findUncrawledArticles(limit: number = 50): Promise<ArticleEntity[]> {
+    return await this.articleRepository.find({
+      where: { isCrawledDetail: false },
+      order: { createdAt: 'ASC' }, // Crawl older articles first
+      take: limit
+    });
+  }
+
+  /**
+   * Update article with detailed content
+   * @param id - Article ID
+   * @param detailContent - Detailed content from crawling
+   * @returns Promise<boolean>
+   */
+  async updateArticleDetail(id: string, detailContent: string): Promise<boolean> {
+    const result = await this.articleRepository.update(id, {
+      detailContent,
+      isCrawledDetail: true,
+      crawledDetailAt: new Date()
+    });
+    return result.affected > 0;
+  }
+
+  /**
+   * Find article by ID
+   * @param id - Article ID
+   * @returns Promise<ArticleEntity | null>
+   */
+  async findById(id: string): Promise<ArticleEntity | null> {
+    return await this.articleRepository.findOne({
+      where: { id }
+    });
+  }
+
+  /**
+   * Get statistics about detailed crawling
+   * @returns Promise<{ total: number, crawled: number, uncrawled: number }>
+   */
+  async getDetailCrawlStats(): Promise<{ total: number, crawled: number, uncrawled: number }> {
+    const total = await this.articleRepository.count();
+    const crawled = await this.articleRepository.count({
+      where: { isCrawledDetail: true }
+    });
+    const uncrawled = total - crawled;
+
+    return { total, crawled, uncrawled };
+  }
+
+  /**
+   * Mark article as failed to crawl detail (for retry logic)
+   * @param id - Article ID
+   * @returns Promise<boolean>
+   */
+  async markDetailCrawlFailed(id: string): Promise<boolean> {
+    const result = await this.articleRepository.update(id, {
+      metadata: () => `JSON_SET(COALESCE(metadata, '{}'), '$.detailCrawlFailed', true, '$.lastDetailCrawlAttempt', '${new Date().toISOString()}')`
+    });
     return result.affected > 0;
   }
 } 

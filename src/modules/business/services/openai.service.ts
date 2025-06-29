@@ -13,6 +13,68 @@ export class OpenAIService {
   }
 
   /**
+   * Generate text response from OpenAI API (non-streaming)
+   * @param prompt - The prompt to send to OpenAI
+   * @param options - Configuration options
+   * @returns Promise<string>
+   */
+  async generateText(
+    prompt: string,
+    options: {
+      model?: string;
+      maxTokens?: number;
+      temperature?: number;
+    } = {}
+  ): Promise<string> {
+    console.log(`🤖 [OpenAIService] [generateText] [starting]:`, {
+      promptLength: prompt.length,
+      options
+    });
+
+    if (!this.apiKey) {
+      throw new Error('OpenAI API key is missing');
+    }
+
+    const headers = {
+      'Authorization': `Bearer ${this.apiKey}`,
+      'Content-Type': 'application/json',
+    };
+
+    const data = {
+      model: options.model || 'gpt-4o',
+      messages: [
+        { role: 'system', content: 'You are a helpful assistant specialized in content processing and extraction.' },
+        { role: 'user', content: prompt }
+      ],
+      max_tokens: options.maxTokens || 2000,
+      temperature: options.temperature || 0.3,
+      stream: false,
+    };
+
+    try {
+      const response = await axios.post(this.apiUrl, data, { headers });
+      
+      const content = response.data.choices[0]?.message?.content || '';
+      
+      console.log(`✅ [OpenAIService] [generateText] [success]:`, {
+        responseLength: content.length,
+        tokensUsed: response.data.usage?.total_tokens || 0
+      });
+
+      return content;
+    } catch (error) {
+      const axiosError = error as AxiosError;
+      console.log(`🔴 [OpenAIService] [generateText] [error]:`, {
+        message: axiosError.message,
+        status: axiosError.response?.status,
+        statusText: axiosError.response?.statusText,
+        data: axiosError.response?.data
+      });
+      throw error;
+    }
+  }
+
+  /**
    * Stream a response from OpenAI API for a given question
    * @param question - The question to send to OpenAI
    * @returns Observable stream of text chunks

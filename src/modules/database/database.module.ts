@@ -2,15 +2,15 @@ import { Module } from '@nestjs/common';
 import { configDb } from './configs';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AdminConfigRepository, ArticleRepository } from './repositories';
-import { AdminConfigEntity, ArticleEntity } from './entities';
+import { AdminConfigRepository, ArticleRepository, ProcessedArticleRepository } from './repositories';
+import { AdminConfigEntity, ArticleEntity, ProcessedArticleEntity } from './entities';
 import { SeedDatabase } from './seeders/seed.database';
 
-const repositories = [AdminConfigRepository, ArticleRepository];
+const repositories = [AdminConfigRepository, ArticleRepository, ProcessedArticleRepository];
 
 const services = [];
 
-const entities = [AdminConfigEntity, ArticleEntity];
+const entities = [AdminConfigEntity, ArticleEntity, ProcessedArticleEntity];
 
 @Module({
   imports: [

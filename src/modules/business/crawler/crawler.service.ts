@@ -945,6 +945,129 @@ export class CrawlerService {
   }
 
   /**
+   * Crawl detailed content from a specific article URL
+   * @param url - The article URL to crawl
+   * @param options - Optional crawl options
+   * @returns Promise<string> - The full HTML content
+   */
+  async crawlArticleDetail(url: string, options?: Partial<CrawlOptions>): Promise<string> {
+    console.log(`🔍 [CrawlerService] [crawlArticleDetail] [url]:`, url);
+
+    try {
+      // Build full URL if it's a relative path
+      const fullUrl = url.startsWith('http') ? url : `https://coin68.com${url}`;
+      
+      const crawlOptions: CrawlOptions = {
+        timeout: 45000, // Longer timeout for detailed content
+        userAgent: this.defaultUserAgent,
+        headers: {},
+        usePuppeteer: true, // Always use Puppeteer for detailed content
+        waitForNetworkIdle: true,
+        waitForImages: false, // Don't wait for images for content extraction
+        scrollToBottom: false, // Don't need to scroll for article content
+        maxScrolls: 0,
+        waitTime: 3000, // Wait for content to load
+        ...options
+      };
+
+      // Use Puppeteer to get the full HTML content
+      const crawlResult = await this.fetchHtmlWithPuppeteer(fullUrl, crawlOptions);
+      
+      console.log(`✅ [CrawlerService] [crawlArticleDetail] [success]:`, {
+        url: fullUrl,
+        htmlLength: crawlResult.html.length,
+        title: crawlResult.title
+      });
+
+      // Return the full HTML content
+      return crawlResult.html;
+
+    } catch (error) {
+      console.log(`🔴 [CrawlerService] [crawlArticleDetail] [error]:`, {
+        url,
+        error: error.message
+      });
+      throw new InternalServerErrorException(`Failed to crawl article detail: ${error.message}`);
+    }
+  }
+
+  /**
+   * Extract main article content from HTML
+   * @param html - The HTML content
+   * @returns string - The extracted article content
+   */
+  private extractMainArticleContent(html: string): string {
+    console.log(`🔄 [CrawlerService] [extractMainArticleContent] [starting]`);
+
+    try {
+      const $ = cheerio.load(html);
+      
+      // Common selectors for article content (prioritized)
+      const contentSelectors = [
+        'article .content',
+        'article .post-content',
+        '.article-content',
+        '.post-content',
+        '.entry-content',
+        '.content-body',
+        'article',
+        '.main-content',
+        '#content',
+        '.content'
+      ];
+
+      let extractedContent = '';
+
+      // Try each selector until we find content
+      for (const selector of contentSelectors) {
+        const contentElement = $(selector).first();
+        if (contentElement.length > 0) {
+          // Remove unwanted elements
+          contentElement.find('script, style, nav, header, footer, .advertisement, .ads, .social-share, .related-posts').remove();
+          
+          // Get text content
+          extractedContent = contentElement.text().trim();
+          
+          if (extractedContent.length > 100) { // Minimum content length
+            console.log(`✅ [CrawlerService] [extractMainArticleContent] [found_content]:`, {
+              selector,
+              contentLength: extractedContent.length
+            });
+            break;
+          }
+        }
+      }
+
+      // Fallback: try to get content from paragraphs
+      if (!extractedContent || extractedContent.length < 100) {
+        const paragraphs = $('p').map((i, el) => $(el).text().trim()).get();
+        extractedContent = paragraphs.filter(p => p.length > 20).join('\n\n');
+        
+        console.log(`⚠️ [CrawlerService] [extractMainArticleContent] [fallback_paragraphs]:`, {
+          paragraphCount: paragraphs.length,
+          contentLength: extractedContent.length
+        });
+      }
+
+      // Clean up the content
+      extractedContent = extractedContent
+        .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+        .replace(/\n\s*\n/g, '\n\n') // Clean up line breaks
+        .trim();
+
+      console.log(`✅ [CrawlerService] [extractMainArticleContent] [completed]:`, {
+        finalContentLength: extractedContent.length
+      });
+
+      return extractedContent;
+
+    } catch (error) {
+      console.log(`🔴 [CrawlerService] [extractMainArticleContent] [error]:`, error.message);
+      return ''; // Return empty string if extraction fails
+    }
+  }
+
+  /**
    * Handle crawl errors and throw appropriate exceptions
    * @param error - The error object
    * @param url - The URL that failed

@@ -15,6 +15,16 @@ export class ArticleEntity extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   content: string;
 
+  @Column({ type: 'text', nullable: true })
+  detailContent: string;
+
+  @Column({ type: 'boolean', default: false })
+  @Index() // Index for querying uncrawled articles
+  isCrawledDetail: boolean;
+
+  @Column({ type: 'timestamp', nullable: true })
+  crawledDetailAt: Date;
+
   @Column({ type: 'varchar', length: 1000, nullable: true })
   image: string;
 
