@@ -5,6 +5,7 @@ import { CrawlerService } from './crawler.service';
 import { CrawlRequestDto } from './dtos/crawl-request.dto';
 import { CrawlResponseDto } from './dtos/crawl-response.dto';
 import { DownloadHtmlQueryDto } from './dtos/download-html-query.dto';
+import { ExtractArticlesRequestDto, ExtractArticlesResponseDto } from './dtos/extract-articles.dto';
 
 @ApiTags('Crawler')
 @Controller('crawler')
@@ -191,5 +192,82 @@ export class CrawlerController {
     
     // Send HTML content
     res.send(result.html);
+  }
+
+  @Post('extract-articles')
+  @ApiOperation({
+    summary: 'Extract articles from URL',
+    description: 'Crawls a URL with full image loading and extracts structured article data including images, titles, and content'
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Articles successfully extracted from URL',
+    type: ExtractArticlesResponseDto,
+    schema: {
+      example: {
+        statusCode: 200,
+        message: 'Articles extracted successfully',
+        data: {
+          sourceUrl: 'https://coin68.com/article/',
+          articles: [
+            {
+              image: 'https://cdn.coin68.com/images/20250614121235_medium_255x175_19.webp',
+              title: 'Liệu BTC có hy vọng tăng lên vùng 125.000 USD vào cuối tháng 6?',
+              content: 'Một số dự báo cho rằng nếu Cục Dự trữ Liên bang Mỹ (Fed) hạ lãi suất, đó có thể là động lực giúp giá tiến lên vùng 120.000–125.000 USD vào cuối tháng 6.',
+              url: '/lieu-btc-co-hy-vong-tang-len-vung-125000-usd-vao-cuoi-thang-6/',
+              date: '14/06/2025',
+              category: 'Bitcoin'
+            }
+          ],
+          totalArticles: 15,
+          pageTitle: 'Tin Tức - Coin68',
+          timestamp: '2023-06-15T10:30:00Z',
+          crawlMethod: 'puppeteer',
+          processingTime: 15420
+        },
+        timestamp: '2023-06-15T10:30:00Z'
+      }
+    }
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'Invalid URL or request parameters',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'Domain not found: https://invalid-domain.com',
+        timestamp: '2023-06-15T10:30:00Z'
+      }
+    }
+  })
+  @ApiResponse({
+    status: HttpStatus.INTERNAL_SERVER_ERROR,
+    description: 'Internal server error during article extraction',
+    schema: {
+      example: {
+        statusCode: 500,
+        message: 'Failed to extract articles: Parsing error',
+        timestamp: '2023-06-15T10:30:00Z'
+      }
+    }
+  })
+  async extractArticles(@Body() extractRequest: ExtractArticlesRequestDto) {
+    console.log(`🔍 [CrawlerController] [extractArticles] [request]:`, extractRequest);
+    
+    const result = await this.crawlerService.extractArticlesFromUrl(extractRequest);
+    
+    console.log(`✅ [CrawlerController] [extractArticles] [success]:`, {
+      url: result.sourceUrl,
+      totalArticles: result.totalArticles,
+      processingTime: result.processingTime,
+      crawlMethod: result.crawlMethod
+    });
+
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Articles extracted successfully',
+      data: result,
+      timestamp: new Date().toISOString()
+    };
   }
 } 

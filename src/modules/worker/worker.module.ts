@@ -3,8 +3,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { configQueue } from './configs';
 import { DatabaseModule } from '@/database';
 import { ScheduleService } from './schedulers/schedule.service';
+
 import { ScheduleModule } from '@nestjs/schedule';
 import { ApiModule } from '@/api';
+import { BusinessModule } from '../business/business.module';
 import { BullModule } from '@nestjs/bull';
 import { UserConsumer } from './consumers';
 
@@ -22,6 +24,7 @@ if (isWorker) {
   imports: [
     ApiModule,
     DatabaseModule,
+    BusinessModule,
     BullModule.forRootAsync({
       imports: [ConfigModule],
       useFactory(config: ConfigService) {

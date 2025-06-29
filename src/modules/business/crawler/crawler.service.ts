@@ -5,6 +5,7 @@ import puppeteer, { Browser, Page } from 'puppeteer';
 import { CrawlResult, CrawlOptions } from './interfaces/crawler.interface';
 import { CrawlRequestDto } from './dtos/crawl-request.dto';
 import { DownloadHtmlQueryDto } from './dtos/download-html-query.dto';
+import { ExtractArticlesRequestDto, ExtractArticlesResponseDto, ArticleItemDto } from './dtos/extract-articles.dto';
 
 @Injectable()
 export class CrawlerService {
@@ -18,11 +19,15 @@ export class CrawlerService {
    * @returns Promise<CrawlResult> - The crawled HTML content and metadata
    */
   async crawlUrl(crawlRequest: CrawlRequestDto): Promise<CrawlResult> {
-    const { url, timeout, userAgent, headers, usePuppeteer, waitForSelector, waitTime, waitForNetworkIdle } = crawlRequest;
+    const { 
+      url, timeout, userAgent, headers, usePuppeteer, waitForSelector, waitTime, waitForNetworkIdle,
+      waitForImages, scrollToBottom, maxScrolls 
+    } = crawlRequest;
     
     console.log(`🔍 [CrawlerService] [crawlUrl] [url]:`, url);
     console.log(`🔍 [CrawlerService] [crawlUrl] [options]:`, { 
-      timeout, userAgent, headers, usePuppeteer, waitForSelector, waitTime, waitForNetworkIdle 
+      timeout, userAgent, headers, usePuppeteer, waitForSelector, waitTime, waitForNetworkIdle,
+      waitForImages, scrollToBottom, maxScrolls 
     });
 
     try {
@@ -33,7 +38,10 @@ export class CrawlerService {
         usePuppeteer: usePuppeteer !== false, // Default to true
         waitForSelector,
         waitTime,
-        waitForNetworkIdle: waitForNetworkIdle !== false // Default to true
+        waitForNetworkIdle: waitForNetworkIdle !== false, // Default to true
+        waitForImages: waitForImages !== false, // Default to true
+        scrollToBottom: scrollToBottom !== false, // Default to true
+        maxScrolls: maxScrolls || 5 // Default to 5 scrolls
       };
 
       // Use Puppeteer by default for better JavaScript support
@@ -98,7 +106,7 @@ export class CrawlerService {
     let page: Page | null = null;
 
     try {
-      // Launch browser
+      // Launch browser with images enabled for proper image loading
       browser = await puppeteer.launch({
         headless: true,
         args: [
@@ -114,7 +122,7 @@ export class CrawlerService {
           '--disable-features=VizDisplayCompositor',
           '--disable-extensions',
           '--disable-plugins',
-          '--disable-images', // Disable images for faster loading
+          // Remove --disable-images to allow images to load
           '--disable-javascript', // We'll enable it selectively
         ],
         timeout: 60000, // Browser launch timeout
@@ -198,6 +206,18 @@ export class CrawlerService {
         }
       }
 
+      // Scroll to bottom to trigger lazy loading if enabled
+      if (options.scrollToBottom) {
+        console.log(`🔄 [CrawlerService] [fetchHtmlWithPuppeteer] [scrolling_to_bottom]:`, options.maxScrolls);
+        await this.scrollToBottomAndWait(page, options.maxScrolls || 5);
+      }
+
+      // Wait for images to load if enabled
+      if (options.waitForImages) {
+        console.log(`🔄 [CrawlerService] [fetchHtmlWithPuppeteer] [waiting_for_images]:`, 'starting');
+        await this.waitForAllImages(page);
+      }
+
       // Additional wait time if specified
       if (options.waitTime && options.waitTime > 0) {
         console.log(`🔄 [CrawlerService] [fetchHtmlWithPuppeteer] [additional_wait]:`, options.waitTime);
@@ -242,6 +262,134 @@ export class CrawlerService {
       if (browser) {
         await browser.close();
       }
+    }
+  }
+
+  /**
+   * Scroll to bottom of page gradually to trigger lazy loading
+   * @param page - Puppeteer page instance
+   * @param maxScrolls - Maximum number of scroll attempts
+   */
+  private async scrollToBottomAndWait(page: Page, maxScrolls: number = 5): Promise<void> {
+    console.log(`🔄 [CrawlerService] [scrollToBottomAndWait] [starting]:`, maxScrolls);
+    
+    try {
+      for (let i = 0; i < maxScrolls; i++) {
+        console.log(`🔄 [CrawlerService] [scrollToBottomAndWait] [scroll_${i + 1}]:`, maxScrolls);
+        
+        // Get current scroll position
+        const previousHeight = await page.evaluate(() => document.body.scrollHeight);
+        
+        // Scroll down gradually
+        await page.evaluate(() => {
+          window.scrollTo(0, document.body.scrollHeight);
+        });
+        
+        // Wait for potential new content to load
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        // Check if new content was loaded
+        const newHeight = await page.evaluate(() => document.body.scrollHeight);
+        
+        if (newHeight === previousHeight) {
+          console.log(`✅ [CrawlerService] [scrollToBottomAndWait] [no_new_content_after_scroll]:`, i + 1);
+          break; // No new content, stop scrolling
+        }
+      }
+      
+      // Scroll back to top for better content capture
+      await page.evaluate(() => {
+        window.scrollTo(0, 0);
+      });
+      
+      // Wait a bit after scrolling back to top
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      console.log(`✅ [CrawlerService] [scrollToBottomAndWait] [completed]:`, maxScrolls);
+    } catch (error) {
+      console.log(`⚠️ [CrawlerService] [scrollToBottomAndWait] [error]:`, error.message);
+      // Continue anyway, scrolling is not critical
+    }
+  }
+
+  /**
+   * Wait for all images on page to load completely
+   * @param page - Puppeteer page instance
+   */
+  private async waitForAllImages(page: Page): Promise<void> {
+    console.log(`🔄 [CrawlerService] [waitForAllImages] [starting]:`, 'checking images');
+    
+    try {
+      // Wait for all images to load or timeout after 15 seconds
+      await page.evaluate(() => {
+        return new Promise<void>((resolve) => {
+          const images = Array.from(document.querySelectorAll('img'));
+          console.log(`🔍 [Browser] [waitForAllImages] [total_images]:`, images.length);
+          
+          if (images.length === 0) {
+            console.log(`✅ [Browser] [waitForAllImages] [no_images_found]:`, 'resolving immediately');
+            resolve();
+            return;
+          }
+          
+          let loadedImages = 0;
+          let errorImages = 0;
+          const totalImages = images.length;
+          
+          const checkComplete = () => {
+            if (loadedImages + errorImages >= totalImages) {
+              console.log(`✅ [Browser] [waitForAllImages] [completed]:`, {
+                total: totalImages,
+                loaded: loadedImages,
+                errors: errorImages
+              });
+              resolve();
+            }
+          };
+          
+          images.forEach((img, index) => {
+            if (img.complete && img.naturalWidth > 0) {
+              loadedImages++;
+              console.log(`✅ [Browser] [waitForAllImages] [already_loaded]:`, index + 1);
+            } else {
+              img.onload = () => {
+                loadedImages++;
+                console.log(`✅ [Browser] [waitForAllImages] [image_loaded]:`, index + 1);
+                checkComplete();
+              };
+              
+              img.onerror = () => {
+                errorImages++;
+                console.log(`⚠️ [Browser] [waitForAllImages] [image_error]:`, index + 1);
+                checkComplete();
+              };
+              
+              // Force reload if src is empty or data URL
+              if (!img.src || img.src.startsWith('data:')) {
+                errorImages++;
+                console.log(`⚠️ [Browser] [waitForAllImages] [invalid_src]:`, index + 1);
+              }
+            }
+          });
+          
+          checkComplete();
+          
+          // Timeout after 15 seconds
+          setTimeout(() => {
+            console.log(`⚠️ [Browser] [waitForAllImages] [timeout]:`, {
+              total: totalImages,
+              loaded: loadedImages,
+              errors: errorImages
+            });
+            resolve();
+          }, 15000);
+        });
+      });
+      
+      console.log(`✅ [CrawlerService] [waitForAllImages] [completed]:`, 'all images processed');
+    } catch (error) {
+      console.log(`⚠️ [CrawlerService] [waitForAllImages] [error]:`, error.message);
+      // Continue anyway, image loading is not critical for basic functionality
     }
   }
 
@@ -314,11 +462,15 @@ export class CrawlerService {
    * @returns Promise<{ html: string, filename: string }> - HTML content and suggested filename
    */
   async crawlHtmlForDownload(downloadQuery: DownloadHtmlQueryDto): Promise<{ html: string, filename: string }> {
-    const { url, timeout, userAgent, filename, usePuppeteer, waitForSelector, waitTime, waitForNetworkIdle } = downloadQuery;
+    const { 
+      url, timeout, userAgent, filename, usePuppeteer, waitForSelector, waitTime, waitForNetworkIdle,
+      waitForImages, scrollToBottom, maxScrolls 
+    } = downloadQuery;
     
     console.log(`🔍 [CrawlerService] [crawlHtmlForDownload] [url]:`, url);
     console.log(`🔍 [CrawlerService] [crawlHtmlForDownload] [options]:`, { 
-      timeout, userAgent, filename, usePuppeteer, waitForSelector, waitTime, waitForNetworkIdle 
+      timeout, userAgent, filename, usePuppeteer, waitForSelector, waitTime, waitForNetworkIdle,
+      waitForImages, scrollToBottom, maxScrolls 
     });
 
     try {
@@ -329,7 +481,10 @@ export class CrawlerService {
         usePuppeteer: usePuppeteer !== false, // Default to true
         waitForSelector,
         waitTime,
-        waitForNetworkIdle: waitForNetworkIdle !== false // Default to true
+        waitForNetworkIdle: waitForNetworkIdle !== false, // Default to true
+        waitForImages: waitForImages !== false, // Default to true
+        scrollToBottom: scrollToBottom !== false, // Default to true
+        maxScrolls: maxScrolls || 5 // Default to 5 scrolls
       };
 
       let html: string;
@@ -422,6 +577,370 @@ export class CrawlerService {
       // Ultimate fallback
       const timestamp = new Date().toISOString().slice(0, 10);
       return `crawled-page-${timestamp}.html`;
+    }
+  }
+
+  /**
+   * Extract articles from HTML content
+   * @param extractRequest - The extract articles request parameters
+   * @returns Promise<ExtractArticlesResponseDto> - Extracted articles data
+   */
+  async extractArticlesFromUrl(extractRequest: ExtractArticlesRequestDto): Promise<ExtractArticlesResponseDto> {
+    const startTime = Date.now();
+    const { 
+      url, timeout, userAgent, headers, usePuppeteer, waitForSelector, waitTime, waitForNetworkIdle,
+      waitForImages, scrollToBottom, maxScrolls, articleSelector, maxArticles 
+    } = extractRequest;
+    
+    console.log(`🔍 [CrawlerService] [extractArticlesFromUrl] [url]:`, url);
+    console.log(`🔍 [CrawlerService] [extractArticlesFromUrl] [options]:`, { 
+      timeout, userAgent, headers, usePuppeteer, waitForSelector, waitTime, waitForNetworkIdle,
+      waitForImages, scrollToBottom, maxScrolls, articleSelector, maxArticles 
+    });
+
+    try {
+      // First, crawl the HTML using existing method
+      const crawlOptions: CrawlOptions = {
+        timeout: timeout || this.defaultTimeout,
+        userAgent: userAgent || this.defaultUserAgent,
+        headers: headers || {},
+        usePuppeteer: usePuppeteer !== false, // Default to true
+        waitForSelector,
+        waitTime,
+        waitForNetworkIdle: waitForNetworkIdle !== false, // Default to true
+        waitForImages: waitForImages !== false, // Default to true
+        scrollToBottom: scrollToBottom !== false, // Default to true
+        maxScrolls: maxScrolls || 5 // Default to 5 scrolls
+      };
+
+      let crawlResult: CrawlResult;
+      let crawlMethod = 'axios';
+
+      // Use Puppeteer by default for better JavaScript support
+      if (crawlOptions.usePuppeteer) {
+        try {
+          crawlResult = await this.fetchHtmlWithPuppeteer(url, crawlOptions);
+          crawlMethod = 'puppeteer';
+          
+          console.log(`✅ [CrawlerService] [extractArticlesFromUrl] [puppeteer_success]:`, {
+            url: crawlResult.url,
+            statusCode: crawlResult.statusCode,
+            contentLength: crawlResult.contentLength,
+            title: crawlResult.title
+          });
+        } catch (puppeteerError) {
+          console.log(`⚠️ [CrawlerService] [extractArticlesFromUrl] [puppeteer_failed_fallback_to_axios]:`, puppeteerError.message);
+          
+          // Fallback to axios if Puppeteer fails
+          const response = await this.fetchHtml(url, crawlOptions);
+          crawlResult = this.processHtmlResponse(url, response);
+          crawlMethod = 'axios-fallback';
+        }
+      } else {
+        // Fallback to axios
+        const response = await this.fetchHtml(url, crawlOptions);
+        crawlResult = this.processHtmlResponse(url, response);
+      }
+
+      // Extract articles from HTML
+      const articles = await this.parseArticlesFromHtml(crawlResult.html, articleSelector, maxArticles);
+      const processingTime = Date.now() - startTime;
+
+      console.log(`✅ [CrawlerService] [extractArticlesFromUrl] [extraction_complete]:`, {
+        url,
+        totalArticles: articles.length,
+        processingTime,
+        crawlMethod
+      });
+
+      return {
+        sourceUrl: url,
+        articles,
+        totalArticles: articles.length,
+        pageTitle: crawlResult.title,
+        timestamp: new Date(),
+        crawlMethod,
+        processingTime
+      };
+
+    } catch (error) {
+      console.log(`🔴 [CrawlerService] [extractArticlesFromUrl] [error]:`, error.message);
+      this.handleCrawlError(error, url);
+    }
+  }
+
+  /**
+   * Parse articles from HTML content using cheerio
+   * @param html - The HTML content to parse
+   * @param customSelector - Custom CSS selector for articles
+   * @param maxArticles - Maximum number of articles to extract
+   * @returns Promise<ArticleItemDto[]> - Array of extracted articles
+   */
+  private async parseArticlesFromHtml(html: string, customSelector?: string, maxArticles: number = 50): Promise<ArticleItemDto[]> {
+    console.log(`🔄 [CrawlerService] [parseArticlesFromHtml] [starting]:`, { customSelector, maxArticles });
+    
+    try {
+      const $ = cheerio.load(html);
+      const articles: ArticleItemDto[] = [];
+
+      // Define possible selectors for articles (prioritize custom selector)
+      const articleSelectors = customSelector ? [customSelector] : [
+        '.MuiBox-root.css-16jnb7i', // Coin68 specific
+        '.article-item',
+        '.post-item',
+        '.news-item',
+        '.card',
+        'article',
+        '.entry',
+        '.item'
+      ];
+
+      let foundArticles = false;
+
+      // Try each selector until we find articles
+      for (const selector of articleSelectors) {
+        console.log(`🔍 [CrawlerService] [parseArticlesFromHtml] [trying_selector]:`, selector);
+        
+        const elements = $(selector);
+        console.log(`🔍 [CrawlerService] [parseArticlesFromHtml] [found_elements]:`, elements.length);
+
+        if (elements.length > 0) {
+          foundArticles = true;
+          
+          elements.each((index, element) => {
+            if (articles.length >= maxArticles) return false; // Break if max reached
+
+            try {
+              const article = this.extractArticleData($, $(element), index);
+              if (article && article.title && (article.image || article.content)) {
+                articles.push(article);
+                console.log(`✅ [CrawlerService] [parseArticlesFromHtml] [extracted_article]:`, {
+                  index: articles.length,
+                  title: article.title.substring(0, 50) + '...',
+                  hasImage: !!article.image,
+                  hasContent: !!article.content
+                });
+              }
+            } catch (error) {
+              console.log(`⚠️ [CrawlerService] [parseArticlesFromHtml] [article_extraction_error]:`, {
+                index,
+                error: error.message
+              });
+            }
+          });
+
+          if (articles.length > 0) {
+            console.log(`✅ [CrawlerService] [parseArticlesFromHtml] [selector_success]:`, {
+              selector,
+              articlesFound: articles.length
+            });
+            break; // Stop trying other selectors if we found articles
+          }
+        }
+      }
+
+      if (!foundArticles) {
+        console.log(`⚠️ [CrawlerService] [parseArticlesFromHtml] [no_articles_found]:`, 'trying generic extraction');
+        
+        // Fallback: try to find any elements with images and titles
+        const fallbackElements = $('div:has(img):has(a)').slice(0, maxArticles);
+        fallbackElements.each((index, element) => {
+          try {
+            const article = this.extractArticleData($, $(element), index);
+            if (article && article.title && (article.image || article.content)) {
+              articles.push(article);
+            }
+          } catch (error) {
+            // Ignore individual extraction errors in fallback mode
+          }
+        });
+      }
+
+      console.log(`✅ [CrawlerService] [parseArticlesFromHtml] [completed]:`, {
+        totalArticles: articles.length,
+        maxArticles
+      });
+
+      return articles;
+
+    } catch (error) {
+      console.log(`🔴 [CrawlerService] [parseArticlesFromHtml] [error]:`, error.message);
+      throw new InternalServerErrorException(`Failed to parse articles: ${error.message}`);
+    }
+  }
+
+  /**
+   * Extract article data from a single element
+   * @param $ - Cheerio instance
+   * @param element - Article element
+   * @param index - Element index
+   * @returns ArticleItemDto | null - Extracted article data
+   */
+  private extractArticleData($: cheerio.CheerioAPI, element: cheerio.Cheerio<any>, index: number): ArticleItemDto | null {
+    try {
+      // Extract image - prioritize real images over placeholders
+      let image = '';
+      const imgElements = element.find('img');
+      
+      if (imgElements.length > 0) {
+        // Try to find the best image (avoid SVG placeholders)
+        let bestImg = null;
+        
+        imgElements.each((_, img) => {
+          const $img = $(img);
+          const src = $img.attr('src') || '';
+          const srcset = $img.attr('srcset') || '';
+          const dataSrc = $img.attr('data-src') || '';
+          
+          // Skip SVG placeholders
+          if (src.includes('data:image/svg+xml')) {
+            return; // Continue to next image
+          }
+          
+          // Prioritize images with srcset (Next.js images)
+          if (srcset && srcset.includes('/_next/image/')) {
+            bestImg = $img;
+            return false; // Break the loop
+          }
+          
+          // Prioritize images with real URLs
+          if (src && (src.startsWith('http') || src.startsWith('/'))) {
+            if (!bestImg) bestImg = $img;
+          }
+          
+          // Fallback to data-src
+          if (dataSrc && (dataSrc.startsWith('http') || dataSrc.startsWith('/'))) {
+            if (!bestImg) bestImg = $img;
+          }
+        });
+        
+        if (bestImg) {
+          // Extract image URL from the best image found
+          const src = bestImg.attr('src') || '';
+          const srcset = bestImg.attr('srcset') || '';
+          const dataSrc = bestImg.attr('data-src') || '';
+          
+          // Handle srcset for better quality images (Next.js)
+          if (srcset) {
+            const srcsetParts = srcset.split(',');
+            // Get the highest resolution (last item in srcset)
+            const highestRes = srcsetParts[srcsetParts.length - 1];
+            if (highestRes) {
+              const srcMatch = highestRes.trim().split(' ')[0];
+              if (srcMatch) image = srcMatch;
+            }
+          }
+          
+          // Fallback to src
+          if (!image && src) {
+            image = src;
+          }
+          
+          // Fallback to data-src
+          if (!image && dataSrc) {
+            image = dataSrc;
+          }
+          
+          // Convert relative URLs to absolute
+          if (image && image.startsWith('/')) {
+            const baseUrl = new URL('https://coin68.com');
+            image = new URL(image, baseUrl).href;
+          }
+          
+          // Decode Next.js image URLs
+          if (image && image.includes('/_next/image/?url=')) {
+            try {
+              const urlMatch = image.match(/url=([^&]+)/);
+              if (urlMatch) {
+                const decodedUrl = decodeURIComponent(urlMatch[1]);
+                image = decodedUrl;
+                console.log(`🔍 [CrawlerService] [extractArticleData] [decoded_nextjs_image]:`, {
+                  original: image,
+                  decoded: decodedUrl
+                });
+              }
+            } catch (error) {
+              console.log(`⚠️ [CrawlerService] [extractArticleData] [decode_error]:`, error.message);
+              // Keep original image URL if decoding fails
+            }
+          }
+        }
+      }
+
+      // Extract title
+      let title = '';
+      const titleSelectors = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', '.title', '[class*="title"]', 'a[title]'];
+      for (const selector of titleSelectors) {
+        const titleElement = element.find(selector).first();
+        if (titleElement.length > 0) {
+          title = titleElement.text().trim() || titleElement.attr('title') || '';
+          if (title) break;
+        }
+      }
+
+      // Extract content/description
+      let content = '';
+      const contentSelectors = ['.description', '.summary', '.excerpt', '.content', 'p', '.MuiTypography-bodyRegular'];
+      for (const selector of contentSelectors) {
+        const contentElement = element.find(selector).first();
+        if (contentElement.length > 0) {
+          content = contentElement.text().trim();
+          if (content && content.length > 20) break; // Only use substantial content
+        }
+      }
+
+      // Extract URL
+      let articleUrl = '';
+      const linkElement = element.find('a').first();
+      if (linkElement.length > 0) {
+        articleUrl = linkElement.attr('href') || '';
+      }
+
+      // Extract date
+      let date = '';
+      const dateSelectors = ['.date', '.time', '[class*="date"]', '[class*="time"]', '.MuiTypography-metaRegular'];
+      for (const selector of dateSelectors) {
+        const dateElement = element.find(selector).first();
+        if (dateElement.length > 0) {
+          date = dateElement.text().trim();
+          if (date) break;
+        }
+      }
+
+      // Extract category
+      let category = '';
+      const categorySelectors = ['.category', '.tag', '[class*="category"]', '[class*="tag"]', '.MuiTypography-tag'];
+      for (const selector of categorySelectors) {
+        const categoryElement = element.find(selector).first();
+        if (categoryElement.length > 0) {
+          category = categoryElement.text().trim();
+          if (category) break;
+        }
+      }
+
+      // Validate required fields
+      if (!title) {
+        console.log(`⚠️ [CrawlerService] [extractArticleData] [missing_title]:`, index);
+        return null;
+      }
+
+      const article: ArticleItemDto = {
+        image: image || '',
+        title: title,
+        content: content || '',
+        url: articleUrl || undefined,
+        date: date || undefined,
+        category: category || undefined
+      };
+
+      return article;
+
+    } catch (error) {
+      console.log(`🔴 [CrawlerService] [extractArticleData] [error]:`, {
+        index,
+        error: error.message
+      });
+      return null;
     }
   }
 

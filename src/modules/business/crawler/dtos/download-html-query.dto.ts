@@ -3,10 +3,10 @@ import { IsUrl, IsOptional, IsNumber, IsString, IsBoolean, Min, Max } from 'clas
 import { Transform } from 'class-transformer';
 
 export class DownloadHtmlQueryDto {
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'URL to crawl and download HTML content',
     example: 'https://coin68.com/article/',
-    type: String
+    required: true
   })
   @IsUrl({}, { message: 'Please provide a valid URL' })
   url: string;
@@ -91,4 +91,37 @@ export class DownloadHtmlQueryDto {
   @Transform(({ value }) => value === 'true' || value === true)
   @IsBoolean()
   waitForNetworkIdle?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Wait for all images to load completely (ensures images are included in HTML)',
+    example: true,
+    default: true
+  })
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  waitForImages?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Scroll to bottom of page to trigger lazy loading images',
+    example: true,
+    default: true
+  })
+  @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
+  @IsBoolean()
+  scrollToBottom?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Maximum number of scroll attempts to load lazy images',
+    example: 5,
+    minimum: 1,
+    maximum: 20,
+    default: 5
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(20)
+  maxScrolls?: number;
 } 

@@ -15,4 +15,7 @@ export interface CrawlOptions {
   waitForSelector?: string;
   waitTime?: number;
   waitForNetworkIdle?: boolean;
+  waitForImages?: boolean;
+  scrollToBottom?: boolean;
+  maxScrolls?: number;
 } 

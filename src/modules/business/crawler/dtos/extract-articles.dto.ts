@@ -2,9 +2,9 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsUrl, IsOptional, IsNumber, IsString, IsObject, IsBoolean, Min, Max } from 'class-validator';
 import { Transform } from 'class-transformer';
 
-export class CrawlRequestDto {
+export class ExtractArticlesRequestDto {
   @ApiProperty({
-    description: 'URL to crawl and extract HTML content',
+    description: 'URL to crawl and extract articles from',
     example: 'https://coin68.com/article/',
     type: String
   })
@@ -60,7 +60,7 @@ export class CrawlRequestDto {
 
   @ApiPropertyOptional({
     description: 'Additional wait time in milliseconds after page load',
-    example: 2000,
+    example: 3000,
     minimum: 0,
     maximum: 30000
   })
@@ -112,4 +112,107 @@ export class CrawlRequestDto {
   @Min(1)
   @Max(20)
   maxScrolls?: number;
+
+  @ApiPropertyOptional({
+    description: 'CSS selector for article containers (auto-detect if not provided)',
+    example: '.MuiBox-root.css-16jnb7i, .article-item'
+  })
+  @IsOptional()
+  @IsString()
+  articleSelector?: string;
+
+  @ApiPropertyOptional({
+    description: 'Maximum number of articles to extract',
+    example: 20,
+    minimum: 1,
+    maximum: 100,
+    default: 50
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  @Max(100)
+  maxArticles?: number;
+}
+
+export class ArticleItemDto {
+  @ApiProperty({
+    description: 'Article image URL',
+    example: 'https://cdn.coin68.com/images/20250614121235_medium_255x175_19.webp'
+  })
+  image: string;
+
+  @ApiProperty({
+    description: 'Article title',
+    example: 'Liệu BTC có hy vọng tăng lên vùng 125.000 USD vào cuối tháng 6?'
+  })
+  title: string;
+
+  @ApiProperty({
+    description: 'Article content/description',
+    example: 'Một số dự báo cho rằng nếu Cục Dự trữ Liên bang Mỹ (Fed) hạ lãi suất, đó có thể là động lực giúp giá tiến lên vùng 120.000–125.000 USD vào cuối tháng 6.'
+  })
+  content: string;
+
+  @ApiPropertyOptional({
+    description: 'Article URL/link',
+    example: '/lieu-btc-co-hy-vong-tang-len-vung-125000-usd-vao-cuoi-thang-6/'
+  })
+  url?: string;
+
+  @ApiPropertyOptional({
+    description: 'Publication date',
+    example: '14/06/2025'
+  })
+  date?: string;
+
+  @ApiPropertyOptional({
+    description: 'Article category/tag',
+    example: 'Bitcoin'
+  })
+  category?: string;
+}
+
+export class ExtractArticlesResponseDto {
+  @ApiProperty({
+    description: 'Source URL that was crawled',
+    example: 'https://coin68.com/article/'
+  })
+  sourceUrl: string;
+
+  @ApiProperty({
+    description: 'Array of extracted articles',
+    type: [ArticleItemDto]
+  })
+  articles: ArticleItemDto[];
+
+  @ApiProperty({
+    description: 'Total number of articles found',
+    example: 15
+  })
+  totalArticles: number;
+
+  @ApiProperty({
+    description: 'Page title',
+    example: 'Tin Tức - Coin68'
+  })
+  pageTitle?: string;
+
+  @ApiProperty({
+    description: 'Crawl timestamp',
+    example: '2023-06-15T10:30:00Z'
+  })
+  timestamp: Date;
+
+  @ApiProperty({
+    description: 'Crawl method used',
+    example: 'puppeteer'
+  })
+  crawlMethod: string;
+
+  @ApiProperty({
+    description: 'Processing time in milliseconds',
+    example: 15420
+  })
+  processingTime: number;
 } 
