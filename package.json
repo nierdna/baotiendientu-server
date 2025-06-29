@@ -51,6 +51,7 @@
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
     "pg": "^8.11.0",
+    "pino-http": "^10.5.0",
     "pino-pretty": "^11.2.2",
     "puppeteer": "^24.11.1",
     "reflect-metadata": "^0.1.13",
