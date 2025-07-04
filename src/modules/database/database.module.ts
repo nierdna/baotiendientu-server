@@ -2,15 +2,37 @@ import { Module } from '@nestjs/common';
 import { configDb } from './configs';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AdminConfigRepository } from './repositories';
-import { AdminConfigEntity, ArticleEntity, ProcessedArticleEntity } from './entities';
+import { AdminConfigRepository, UserRepository, CategoryRepository, TagRepository, BlogRepository, BlogTagRepository, ForumRepository, ForumThreadRepository, CommentRepository, LikeRepository } from './repositories';
+import { AdminConfigEntity, UserEntity, CategoryEntity, TagEntity, BlogEntity, BlogTagEntity, ForumEntity, ForumThreadEntity, CommentEntity, LikeEntity } from './entities';
 import { SeedDatabase } from './seeders/seed.database';
 
-const repositories = [AdminConfigRepository];
+const repositories = [
+  AdminConfigRepository,
+  UserRepository,
+  CategoryRepository,
+  TagRepository,
+  BlogRepository,
+  BlogTagRepository,
+  ForumRepository,
+  ForumThreadRepository,
+  CommentRepository,
+  LikeRepository,
+];
 
 const services = [];
 
-const entities = [AdminConfigEntity, ArticleEntity, ProcessedArticleEntity];
+const entities = [
+  AdminConfigEntity,
+  UserEntity,
+  CategoryEntity,
+  TagEntity,
+  BlogEntity,
+  BlogTagEntity,
+  ForumEntity,
+  ForumThreadEntity,
+  CommentEntity,
+  LikeEntity,
+];
 
 @Module({
   imports: [

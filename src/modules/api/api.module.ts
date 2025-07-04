@@ -13,7 +13,7 @@ import { configCache } from './configs/cache';
 import { HttpCacheInterceptor } from './interceptors';
 import { BusinessModule } from '@/business/business.module';
 
-  const controllers = [HealthController];
+const controllers = [HealthController];
 
 @Module({
   imports: [
@@ -62,7 +62,7 @@ import { BusinessModule } from '@/business/business.module';
   providers: [
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard
+      useClass: ThrottlerGuard,
     },
     {
       provide: APP_INTERCEPTOR,
