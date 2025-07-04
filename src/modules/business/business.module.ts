@@ -8,8 +8,10 @@ import { JwtModule } from '@nestjs/jwt';
 import { BlogService } from './services/blog.service';
 import { CategoryService } from './services/category.service';
 import { TagService } from './services/tag.service';
+import { CommentService } from './services/comment.service';
+import { LikeService } from './services/like.service';
 
-const services = [OpenAIService, ForumThreadService, UserService, BlogService, CategoryService, TagService];
+const services = [OpenAIService, ForumThreadService, UserService, BlogService, CategoryService, TagService, CommentService, LikeService];
 
 @Module({
   imports: [

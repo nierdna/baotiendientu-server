@@ -1,6 +1,6 @@
 import { Module, OnApplicationBootstrap } from '@nestjs/common';
 import { DatabaseModule } from '@/database';
-import { HealthController, ForumThreadController, UserController, BlogController, CategoryController, TagController } from '@/api/controllers';
+import { HealthController, ForumThreadController, UserController, BlogController, CategoryController, TagController, CommentController, LikeController } from '@/api/controllers';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { QueueModule } from '@/queue/queue.module';
@@ -13,7 +13,7 @@ import { configCache } from './configs/cache';
 import { HttpCacheInterceptor } from './interceptors';
 import { BusinessModule } from '@/business/business.module';
 
-const controllers = [HealthController, ForumThreadController, UserController, BlogController, CategoryController, TagController];
+const controllers = [HealthController, ForumThreadController, UserController, BlogController, CategoryController, TagController, CommentController, LikeController];
 
 @Module({
   imports: [

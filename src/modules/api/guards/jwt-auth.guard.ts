@@ -1,65 +1,54 @@
-// import { UserRepository } from '@/database/repositories';
-// import { TJWTPayload } from '@/shared/types';
-// import {
-//   CanActivate,
-//   ExecutionContext,
-//   HttpStatus,
-//   Inject,
-//   Injectable,
-//   UnauthorizedException,
-// } from '@nestjs/common';
-// import { ConfigService } from '@nestjs/config';
-// import { JwtService } from '@nestjs/jwt';
-// import { Request } from 'express';
+import { UserRepository } from '@/database/repositories';
+import { Injectable, ExecutionContext, UnauthorizedException, HttpStatus, Inject } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import { AuthGuard } from '@nestjs/passport';
+import { Request } from 'express';
 
-// @Injectable()
-// export class JwtAuthGuard implements CanActivate {
-//   @Inject(UserRepository)
-//   private userRepository: UserRepository;
-//   constructor(
-//     private jwtService: JwtService,
-//     private configService: ConfigService,
-//   ) {}
+@Injectable()
+export class JwtAuthGuard extends AuthGuard('jwt') {
+  @Inject(UserRepository)
+  private userRepository: UserRepository;
+  
+  constructor(
+    private jwtService: JwtService,
+    private configService: ConfigService,
+  ) {
+    super();
+  }
 
-//   async canActivate(context: ExecutionContext): Promise<boolean> {
-//     const request = context.switchToHttp().getRequest();
-//     const token = this.extractTokenFromHeader(request);
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest();
+    const token = this.extractTokenFromHeader(request);
     
-//     // Chỉ bypass kiểm tra token cho endpoint /blogs
-//     if (
-//       process.env.APP_ENV === 'local'
-//     ) {
-//       return true;
-//     }
+    if (!token) {
+      throw new UnauthorizedException('Missing authentication token');
+    }
     
-//     if (token) {
-//       try {
-//         const payload: TJWTPayload = await this.jwtService.verifyAsync(token, {
-//           secret: this.configService.get<string>('JWT_SECRET'),
-//         });
-//         if (
-//           !(await this.userRepository.exists({ where: { id: payload.sub } }))
-//         ) {
-//           throw {
-//             status_code: HttpStatus.UNAUTHORIZED,
-//             message: `Not found user`,
-//           };
-//         }
-//         request['user'] = { ...payload };
-//       } catch (err) {
-//         throw new UnauthorizedException({
-//           status_code: HttpStatus.UNAUTHORIZED,
-//           ...err,
-//         });
-//       }
-//       return true;
-//     } else {
-//       throw new UnauthorizedException('Unauthorized');
-//     }
-//   }
+    try {
+      const payload = await this.jwtService.verifyAsync(token, {
+        secret: this.configService.get<string>('auth.jwt.jwt_secret_key'),
+      });
+      
+      // Verify user exists
+      const user = await this.userRepository.findOne({ where: { id: payload.sub } });
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
+      
+      // Add user to request
+      request.user = user;
+      return true;
+    } catch (error) {
+      throw new UnauthorizedException({
+        status_code: HttpStatus.UNAUTHORIZED,
+        message: 'Invalid or expired token',
+      });
+    }
+  }
 
-//   private extractTokenFromHeader(request: Request): string | undefined {
-//     const [type, token] = request.headers.authorization?.split(' ') ?? [];
-//     return type === 'Bearer' ? token : undefined;
-//   }
-// }
+  private extractTokenFromHeader(request: Request): string | undefined {
+    const [type, token] = request.headers.authorization?.split(' ') ?? [];
+    return type === 'Bearer' ? token : undefined;
+  }
+}
