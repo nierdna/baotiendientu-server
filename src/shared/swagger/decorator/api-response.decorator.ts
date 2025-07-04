@@ -8,34 +8,40 @@ import {
 
 export const ApiBaseResponse = <TModel extends Type<any>>(
   model?: TModel,
-  options?: {
+  options: {
     statusCode?: number;
     isArray?: boolean;
     isPaginate?: boolean;
     description?: string;
-  },
+  } = {},
 ) => {
-  const { statusCode, isArray, isPaginate, description } = options;
+  const { statusCode, isArray, isPaginate, description } = options || {};
   const status = statusCode ? statusCode : 200;
   const extraModels: any[] = isPaginate ? [model, PaginationResponse] : [model];
-  const properties: (SchemaObject | ReferenceObject)[] = isArray
-    ? [
-        {
-          properties: {
-            data: {
-              type: 'array',
-              items: { $ref: getSchemaPath(model) },
-            },
-          },
-        },
-      ]
-    : [
-        {
-          properties: {
-            data: { $ref: getSchemaPath(model) },
-          },
-        },
-      ];
+  const buildDataProperty = () => {
+    if (!model) {
+      return isArray
+        ? {
+            type: 'array',
+            items: { type: 'object' },
+          }
+        : { type: 'object' };
+    }
+    return isArray
+      ? {
+          type: 'array',
+          items: { $ref: getSchemaPath(model) },
+        }
+      : { $ref: getSchemaPath(model) };
+  };
+
+  const properties: (SchemaObject | ReferenceObject)[] = [
+    {
+      properties: {
+        data: buildDataProperty(),
+      },
+    },
+  ];
 
   if (isPaginate) {
     properties.push({
@@ -47,18 +53,15 @@ export const ApiBaseResponse = <TModel extends Type<any>>(
 
   properties.push({
     properties: {
-      status_code: {
-        type: 'number',
-        example: 200,
-      },
-      msg: {
-        type: 'string',
-        example: 'Success',
-      },
+      status_code: { type: 'number', example: 200 },
+      msg: { type: 'string', example: 'Success' },
     },
   });
+
+  const filteredExtraModels = extraModels.filter(Boolean);
+
   return applyDecorators(
-    ApiExtraModels(...extraModels),
+    ApiExtraModels(...filteredExtraModels),
     ApiResponse({
       status,
       description,
