@@ -55,6 +55,10 @@ export class CommentService {
   async update(id: string, userId: string, dto: UpdateCommentDto, isAdmin = false): Promise<CommentEntity> {
     const comment = await this.commentRepo.findOne({ where: { id }, relations: ['user'] });
     if (!comment) throw new NotFoundException('Comment not found');
+    if (!comment.user) {
+      console.log(`🔴 [CommentService][update] Comment ${id} has no user!`);
+      throw new NotFoundException('Comment has no user');
+    }
     if (!isAdmin && comment.user.id !== userId) throw new ForbiddenException('Permission denied');
     comment.content = dto.content;
     return this.commentRepo.save(comment);

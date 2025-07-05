@@ -1,5 +1,5 @@
-import { Controller, Post, Body, Get, UseGuards } from '@nestjs/common';
-import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { Controller, Post, Body, Get, UseGuards, HttpStatus } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { RegisterUserDto, LoginDto, UserResponseDto } from '@/api/dtos/user.dto';
 import { UserService } from '@/business/services/user.service';
 import { ApiBaseResponse } from '@/shared/swagger/decorator/api-response.decorator';
@@ -32,7 +32,20 @@ export class UserController {
 
   @Get('verify')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Verify token validity and get current user' })
+  @ApiBearerAuth()
+  @ApiOperation({ 
+    summary: 'Verify token validity and get current user',
+    description: 'This endpoint verifies if the JWT token is valid and returns the current user information. It requires a valid Bearer token in the Authorization header.'
+  })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Token is valid and user information is returned',
+    type: UserResponseDto
+  })
+  @ApiResponse({
+    status: HttpStatus.UNAUTHORIZED,
+    description: 'Invalid or missing token. You must include a valid JWT token in the Authorization header: Bearer <token>'
+  })
   @ApiBaseResponse(UserResponseDto)
   async verifyToken(@User() user) {
     const { password, ...safeUser } = user;

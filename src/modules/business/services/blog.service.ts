@@ -1,6 +1,6 @@
 import { Injectable, ConflictException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { Inject } from '@nestjs/common/decorators';
-import { BlogRepository, CategoryRepository } from '@/database/repositories';
+import { BlogRepository, CategoryRepository, UserRepository } from '@/database/repositories';
 import { CreateBlogDto, UpdateBlogDto } from '@/api/dtos/blog.dto';
 import { BlogEntity } from '@/database/entities/blog.entity';
 
@@ -9,12 +9,22 @@ export class BlogService {
   constructor(
     @Inject(BlogRepository) private readonly blogRepo: BlogRepository,
     @Inject(CategoryRepository) private readonly categoryRepo: CategoryRepository,
+    @Inject(UserRepository) private readonly userRepo: UserRepository,
   ) {}
 
   async create(authorId: string, dto: CreateBlogDto): Promise<BlogEntity> {
+    console.log(`🔍 [BlogService] create - authorId: ${authorId}`);
+    console.log(`🔍 [BlogService] dto:`, JSON.stringify(dto, null, 2));
+    
     if (await this.blogRepo.findOne({ where: { slug: dto.slug } })) {
       throw new ConflictException('Slug already exists');
     }
+
+    // Load actual user entity
+    const author = await this.userRepo.findOne({ where: { id: authorId } });
+    console.log(`🔍 [BlogService] author found:`, author ? `ID: ${author.id}, Name: ${author.name}, Email: ${author.email}` : 'NOT FOUND');
+    
+    if (!author) throw new NotFoundException('Author not found');
 
     let category = null;
     if (dto.categoryId) {
@@ -25,7 +35,7 @@ export class BlogService {
     const blog = this.blogRepo.create({
       ...dto,
       category,
-      author: { id: authorId } as any,
+      author,
       isPublished: false,
       likeCount: 0,
       viewCount: 0,
@@ -79,7 +89,6 @@ export class BlogService {
     const blog = await this.blogRepo.findOne({ where: { id }, relations: ['author'] });
     if (!blog) throw new NotFoundException('Blog not found');
     if (!isAdmin && blog.author.id !== userId) throw new ForbiddenException('Permission denied');
-
     blog.isPublished = true;
     blog.publishedAt = new Date();
     return this.blogRepo.save(blog);

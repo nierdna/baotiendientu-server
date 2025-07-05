@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsBoolean, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
+import { BlogEntity } from '@/database/entities/blog.entity';
 
 export class CreateBlogDto {
   @ApiProperty({ description: 'Blog title', example: 'Understanding Blockchain', maxLength: 255 })
@@ -142,4 +143,26 @@ export class BlogResponseDto {
 
   @ApiProperty({ description: 'Updated at' })
   updated_at: Date;
+
+  // Transform function to convert BlogEntity to BlogResponseDto
+  static fromEntity(entity: BlogEntity): BlogResponseDto {
+    return {
+      id: entity.id,
+      title: entity.title,
+      slug: entity.slug,
+      content: entity.content,
+      excerpt: entity.excerpt,
+      thumbnailUrl: entity.thumbnailUrl,
+      metaTitle: entity.metaTitle,
+      metaDescription: entity.metaDescription,
+      categoryId: entity.category?.id,
+      authorId: entity.author?.id || null,
+      isPublished: entity.isPublished,
+      viewCount: entity.viewCount,
+      likeCount: entity.likeCount,
+      publishedAt: entity.publishedAt,
+      created_at: entity.created_at,
+      updated_at: entity.updated_at,
+    };
+  }
 } 
