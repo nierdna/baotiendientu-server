@@ -4,7 +4,7 @@ import { CommentService } from '@/business/services/comment.service';
 import { CreateCommentDto, UpdateCommentDto, CommentResponseDto } from '@/api/dtos/comment.dto';
 import { ApiBaseResponse } from '@/shared/swagger/decorator/api-response.decorator';
 import { BaseResponse } from '@/shared/swagger/response/base.response';
-import { CurrentUserId } from '@/api/decorator/user.decorator';
+import { CurrentUserId, CurrentUserRole } from '@/api/decorator/user.decorator';
 import { JwtAuthGuard } from '@/api/guards/jwt-auth.guard';
 
 @ApiTags('Comment')
@@ -41,8 +41,10 @@ export class CommentController {
     @Param('id') id: string,
     @Body() dto: UpdateCommentDto,
     @CurrentUserId() userId: string,
+    @CurrentUserRole() userRole: string,
   ) {
-    const comment = await this.commentService.update(id, userId, dto);
+    const isAdmin = userRole === 'admin';
+    const comment = await this.commentService.update(id, userId, dto, isAdmin);
     return new BaseResponse(comment);
   }
 
@@ -51,8 +53,9 @@ export class CommentController {
   @ApiBearerAuth()
   @ApiBaseResponse()
   @UseGuards(JwtAuthGuard)
-  async remove(@Param('id') id: string, @CurrentUserId() userId: string) {
-    await this.commentService.remove(id, userId);
+  async remove(@Param('id') id: string, @CurrentUserId() userId: string, @CurrentUserRole() userRole: string) {
+    const isAdmin = userRole === 'admin';
+    await this.commentService.remove(id, userId, isAdmin);
     return new BaseResponse(null, 200, 'Deleted');
   }
 } 

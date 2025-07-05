@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { Inject } from '@nestjs/common/decorators';
-import { CommentRepository, BlogRepository, ForumThreadRepository } from '@/database/repositories';
+import { CommentRepository, BlogRepository, ForumThreadRepository, UserRepository } from '@/database/repositories';
 import { CreateCommentDto, UpdateCommentDto } from '@/api/dtos/comment.dto';
 import { CommentEntity } from '@/database/entities/comment.entity';
 
@@ -10,6 +10,7 @@ export class CommentService {
     @Inject(CommentRepository) private readonly commentRepo: CommentRepository,
     @Inject(BlogRepository) private readonly blogRepo: BlogRepository,
     @Inject(ForumThreadRepository) private readonly threadRepo: ForumThreadRepository,
+    @Inject(UserRepository) private readonly userRepo: UserRepository,
   ) {}
 
   private async validateSource(sourceType: string, sourceId: string) {
@@ -28,15 +29,21 @@ export class CommentService {
 
   async create(userId: string, dto: CreateCommentDto): Promise<CommentEntity> {
     await this.validateSource(dto.sourceType, dto.sourceId);
+    
+    // Load actual user entity
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User not found');
+    
     let parent = null;
     if (dto.parentId) {
       parent = await this.commentRepo.findOne({ where: { id: dto.parentId } });
       if (!parent) throw new NotFoundException('Parent comment not found');
     }
+    
     const comment = this.commentRepo.create({
       sourceType: dto.sourceType,
       sourceId: dto.sourceId,
-      user: { id: userId } as any,
+      user,
       content: dto.content,
       parent,
     });

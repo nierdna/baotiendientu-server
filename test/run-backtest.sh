@@ -486,7 +486,12 @@ if [ -n "$ADMIN_TOKEN" ] && [ -n "$BLOG_ID" ] && [ -n "$COMMENT_ID" ]; then
         "parentId": "'$COMMENT_ID'"
     }' "Authorization: Bearer $ADMIN_TOKEN")
 
-    check_response "$REPLY_RESPONSE" "Comment Reply"
+    if check_response "$REPLY_RESPONSE" "Comment Reply"; then
+        REPLY_ID=$(extract_field "$REPLY_RESPONSE" "id")
+        if [ -n "$REPLY_ID" ]; then
+            echo "  Reply ID: $REPLY_ID"
+        fi
+    fi
 else
     echo -e "${RED}❌ Comment Reply (Missing required IDs or token)${NC}"
 fi
@@ -547,12 +552,14 @@ fi
 
 # Test 23: Update Comment
 echo -n "Updating comment... "
-if [ -n "$COMMENT_ID" ] && [ -n "$MEMBER_TOKEN" ]; then
+if [ -n "$COMMENT_ID" ] && [ -n "$ADMIN_TOKEN" ]; then
     UPDATE_COMMENT_RESPONSE=$(make_request "PUT" "/comments/$COMMENT_ID" '{
         "content": "Bài viết test rất hay! Tôi cũng đồng ý với quan điểm này về Bitcoin. [Đã chỉnh sửa]"
-    }' "Authorization: Bearer $MEMBER_TOKEN")
+    }' "Authorization: Bearer $ADMIN_TOKEN")
 
-    check_response "$UPDATE_COMMENT_RESPONSE" "Comment Update"
+    if check_response "$UPDATE_COMMENT_RESPONSE" "Comment Update"; then
+        echo "  Comment updated successfully"
+    fi
 else
     echo -e "${RED}❌ Comment Update (Missing comment ID or token)${NC}"
 fi

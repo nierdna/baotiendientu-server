@@ -4,6 +4,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { GlobalExceptionFilter } from '@/api/filters/GlobalExceptionFilter';
 import { Logger as PinoLogger } from 'nestjs-pino';
+import { SnakeCaseInterceptor } from '@/shared/interceptors/snake-case.interceptor';
+import { SnakeCaseRequestPipe } from '@/shared/pipes/snake-case-request.pipe';
 
 const isApi = Boolean(Number(process.env.IS_API || 0));
 
@@ -26,8 +28,9 @@ async function bootstrap() {
     });
 
     app.useLogger(app.get(PinoLogger));
-    app.useGlobalPipes(new ValidationPipe({ transform: true }));
+    app.useGlobalPipes(new SnakeCaseRequestPipe(), new ValidationPipe({ transform: true }));
     app.useGlobalFilters(new GlobalExceptionFilter(true, true));
+    app.useGlobalInterceptors(new SnakeCaseInterceptor());
 
     if (process.env.APP_ENV !== 'production') {
       const options = new DocumentBuilder()

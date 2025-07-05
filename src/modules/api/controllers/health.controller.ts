@@ -47,7 +47,12 @@ export class HealthController {
     description: 'Database connection failed',
   })
   async checkDB() {
-    return await this.adminConfigRepository.findOne({ where: {} });
+    try {
+      const result = await this.adminConfigRepository.findOne({ where: {} });
+      return { status: 'ok', message: 'Database connection is healthy', data: result };
+    } catch (error) {
+      throw new Error('Database connection failed');
+    }
   }
 
   @Get('throw')
