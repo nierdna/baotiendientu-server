@@ -1,16 +1,12 @@
 import {
   Controller,
   Post,
-  UseInterceptors,
-  UploadedFile,
   BadRequestException,
-  ParseFilePipe,
-  MaxFileSizeValidator,
-  FileTypeValidator,
   HttpStatus,
-  Body,
+  Req,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import multer from 'multer';
+import { Request } from 'express';
 import {
   ApiTags,
   ApiOperation,
@@ -26,7 +22,6 @@ export class MediaController {
   constructor(private readonly mediaService: MediaService) {}
 
   @Post('upload')
-  @UseInterceptors(FileInterceptor('file'))
   @ApiOperation({
     summary: 'Upload file',
     description: 'Upload a file and return the public URL'
@@ -70,31 +65,56 @@ export class MediaController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Invalid file or upload error'
   })
-  async uploadFile(
-    @UploadedFile(
-      new ParseFilePipe({
-        validators: [
-          new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }), // 10MB
-        ],
-      }),
-    )
-    file: Express.Multer.File,
-  ) {
-    if (!file) {
-      throw new BadRequestException('File không được để trống');
-    }
-    
-    try {
-      const result = await this.mediaService.uploadToImgbb(file);
-      
-      return {
-        status_code: 200,
-        message: 'File uploaded successfully',
-        data: result,
-        timestamp: new Date().toISOString(),
-      };
-    } catch (error) {
-      throw new BadRequestException(error.message);
-    }
+  async uploadFile(@Req() req: Request) {
+    return new Promise((resolve, reject) => {
+      const upload = multer({
+        storage: multer.diskStorage({
+          destination: './temp-uploads',
+          filename: (req, file, cb) => {
+            const randomName = Array(32)
+              .fill(null)
+              .map(() => Math.round(Math.random() * 16).toString(16))
+              .join('');
+            cb(null, `${randomName}-${file.originalname}`);
+          },
+        }),
+        limits: {
+          fileSize: 10 * 1024 * 1024, // 10MB
+        },
+      }).single('file');
+
+      upload(req, {} as any, async (err) => {
+        if (err) {
+          reject(new BadRequestException(`Lỗi upload: ${err.message}`));
+          return;
+        }
+
+        const file = req.file;
+        console.log('Controller received file:', {
+          originalname: file?.originalname,
+          mimetype: file?.mimetype,
+          size: file?.size,
+          bufferLength: file?.buffer?.length || 0
+        });
+        
+        if (!file) {
+          reject(new BadRequestException('File không được để trống'));
+          return;
+        }
+        
+        try {
+          const result = await this.mediaService.uploadToImgbb(file);
+          
+          resolve({
+            status_code: 200,
+            message: 'File uploaded successfully',
+            data: result,
+            timestamp: new Date().toISOString(),
+          });
+        } catch (error) {
+          reject(new BadRequestException(error.message));
+        }
+      });
+    });
   }
 } 

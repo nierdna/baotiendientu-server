@@ -4,42 +4,71 @@ import * as path from 'path';
 
 @Injectable()
 export class MediaService {
-  private readonly imgbbApiKey = '309bdd8d5ff4767d0d1092937476613b';
-  private readonly imgbbApiUrl = 'https://api.imgbb.com/1/upload';
+  private readonly imgbbApiKey: string;
+  private readonly imgbbApiUrl: string;
 
-  constructor() {}
+  constructor() {
+    this.imgbbApiKey = process.env.IMGBB_API_KEY || '309bdd8d5ff4767d0d1092937476613b';
+    this.imgbbApiUrl = process.env.IMGBB_API_URL || 'https://api.imgbb.com/1/upload';
+  }
 
   async uploadToImgbb(file: Express.Multer.File) {
     try {
-      if (!file) {
-        throw new BadRequestException('File không được để trống');
-      }
+      if (!file) throw new BadRequestException('File không được để trống');
+      
+      // Debug: Log file object để xem có gì
+      console.log('File object:', {
+        fieldname: file.fieldname,
+        originalname: file.originalname,
+        encoding: file.encoding,
+        mimetype: file.mimetype,
+        size: file.size,
+        buffer: file.buffer ? `Buffer(${file.buffer.length})` : 'null',
+        filename: file.filename
+      });
 
-      // Chuyển buffer sang base64 (KHÔNG prefix)
-      const base64 = file.buffer.toString('base64');
-      const formData = new URLSearchParams();
+      // Đọc file từ disk và chuyển sang base64
+      let base64: string;
+      if (file.buffer && file.buffer.length > 0) {
+        base64 = file.buffer.toString('base64');
+      } else {
+        const fs = require('fs');
+        const filePath = path.join('./temp-uploads', file.filename);
+        try {
+          if (fs.existsSync(filePath)) {
+            const fileBuffer = fs.readFileSync(filePath);
+            base64 = fileBuffer.toString('base64');
+            // Auto cleanup - xóa file temp ngay lập tức
+            fs.unlinkSync(filePath);
+          } else {
+            throw new BadRequestException(`File không tồn tại: ${filePath}`);
+          }
+        } catch (error) {
+          throw new BadRequestException(`Lỗi đọc file: ${error.message}`);
+        }
+      }
+      
+      if (!base64 || base64.length < 100) throw new BadRequestException('File buffer lỗi hoặc rỗng');
+
+      // Gửi base64 qua form-data
+      const FormData = require('form-data');
+      const formData = new FormData();
       formData.append('image', base64);
 
-      // Upload to imgbb
       const response = await axios.post(
         `${this.imgbbApiUrl}?key=${this.imgbbApiKey}`,
         formData,
-        { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+        { headers: formData.getHeaders() }
       );
-
       if (response.data.success) {
         return {
           url: response.data.data.url,
           display_url: response.data.data.display_url,
-          delete_url: response.data.data.delete_url,
-          title: response.data.data.title,
-          time: response.data.data.time
         };
       } else {
         throw new BadRequestException('Lỗi upload imgbb: ' + response.data.error?.message || 'Unknown error');
       }
     } catch (error) {
-      console.error('Chi tiết lỗi imgbb:', error.response?.data || error.message);
       throw new BadRequestException(`Lỗi upload file: ${error.response?.data?.error?.message || error.message}`);
     }
   }
