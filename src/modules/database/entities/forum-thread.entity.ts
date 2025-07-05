@@ -17,12 +17,12 @@ export class ForumThreadEntity extends BaseEntity {
   @Column({ type: 'text' })
   content: string;
 
-  @Column({ type: 'int', default: 0 })
-  viewCount: number;
+  @Column({ type: 'int', default: 0, name: 'view_count' })
+  view_count: number;
 
-  @Column({ type: 'int', default: 0 })
-  likeCount: number;
+  @Column({ type: 'int', default: 0, name: 'like_count' })
+  like_count: number;
 
-  @Column({ type: 'boolean', default: false })
-  isLocked: boolean;
+  @Column({ type: 'boolean', default: false, name: 'is_locked' })
+  is_locked: boolean;
 } 

@@ -6,7 +6,7 @@ export class RegisterUserDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(255)
-  name: string;
+  user_name: string;
 
   @ApiProperty({ description: 'Email address', example: 'john@example.com' })
   @IsEmail()
@@ -21,7 +21,7 @@ export class RegisterUserDto {
   @ApiPropertyOptional({ description: 'Avatar URL' })
   @IsString()
   @IsOptional()
-  avatarUrl?: string;
+  avatar_url?: string;
 }
 
 export class LoginDto {
@@ -39,13 +39,13 @@ export class UserResponseDto {
   id: string;
 
   @ApiProperty({ description: 'Display name' })
-  name: string;
+  user_name: string;
 
   @ApiProperty({ description: 'Email address' })
   email: string;
 
   @ApiPropertyOptional({ description: 'Avatar URL' })
-  avatarUrl?: string;
+  avatar_url?: string;
 
   @ApiProperty({ description: 'User role', example: 'member' })
   role: string;

@@ -5,9 +5,9 @@ export class ToggleLikeDto {
   @ApiProperty({ description: 'Source type', enum: ['blog', 'forum_thread'] })
   @IsString()
   @IsIn(['blog', 'forum_thread'])
-  sourceType: string;
+  source_type: string;
 
   @ApiProperty({ description: 'Source ID' })
   @IsUUID()
-  sourceId: string;
+  source_id: string;
 } 

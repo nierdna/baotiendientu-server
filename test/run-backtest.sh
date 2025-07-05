@@ -186,10 +186,10 @@ echo "--------------------------------"
 # Test 1: Register Admin User (or login if exists)
 echo -n "Registering admin user... "
 ADMIN_REGISTER_RESPONSE=$(make_request "POST" "/users/register" '{
-    "name": "Admin User Test",
+    "user_name": "Admin User Test",
     "email": "admin.test@baotiendientu.com",
     "password": "Admin123!",
-    "avatarUrl": "https://example.com/admin-avatar.jpg"
+    "avatar_url": "https://example.com/admin-avatar.jpg"
 }')
 
 if echo "$ADMIN_REGISTER_RESPONSE" | grep -q '"statusCode":409'; then
@@ -201,7 +201,7 @@ fi
 # Test 2: Login Admin User
 echo -n "Logging in admin user... "
 ADMIN_LOGIN_RESPONSE=$(make_request "POST" "/users/login" '{
-    "email": "admin.test@baotiendientu.com",
+    "email": "admin@baotiendientu.com",
     "password": "Admin123!"
 }')
 
@@ -217,7 +217,7 @@ if check_response "$ADMIN_LOGIN_RESPONSE" "Admin Login"; then
 else
     echo -e "${RED}❌ Admin Login Failed!${NC}"
     echo -e "${YELLOW}💡 Solution: Restart server to re-run seed script, or manually delete test users from database.${NC}"
-    echo -e "${YELLOW}💡 Expected credentials: admin.test@baotiendientu.com | Admin123!${NC}"
+    echo -e "${YELLOW}💡 Expected credentials: admin@baotiendientu.com | Admin123!${NC}"
     # Continue with empty token for other tests
     ADMIN_TOKEN=""
 fi
@@ -225,10 +225,10 @@ fi
 # Test 3: Register Member User (or login if exists)
 echo -n "Registering member user... "
 MEMBER_REGISTER_RESPONSE=$(make_request "POST" "/users/register" '{
-    "name": "Member User Test",
+    "user_name": "Member User Test",
     "email": "member.test@baotiendientu.com",
     "password": "Member123!",
-    "avatarUrl": "https://example.com/member-avatar.jpg"
+    "avatar_url": "https://example.com/member-avatar.jpg"
 }')
 
 if echo "$MEMBER_REGISTER_RESPONSE" | grep -q '"statusCode":409'; then
@@ -240,7 +240,7 @@ fi
 # Test 4: Login Member User
 echo -n "Logging in member user... "
 MEMBER_LOGIN_RESPONSE=$(make_request "POST" "/users/login" '{
-    "email": "member.test@baotiendientu.com",
+    "email": "member@baotiendientu.com",
     "password": "Member123!"
 }')
 
@@ -256,7 +256,7 @@ if check_response "$MEMBER_LOGIN_RESPONSE" "Member Login"; then
 else
     echo -e "${RED}❌ Member Login Failed!${NC}"
     echo -e "${YELLOW}💡 Solution: Restart server to re-run seed script, or manually delete test users from database.${NC}"
-    echo -e "${YELLOW}💡 Expected credentials: member.test@baotiendientu.com | Member123!${NC}"
+    echo -e "${YELLOW}💡 Expected credentials: member@baotiendientu.com | Member123!${NC}"
     # Continue with empty token for other tests
     MEMBER_TOKEN=""
 fi
@@ -456,8 +456,8 @@ echo "--------------------------------"
 echo -n "Adding comment to blog... "
 if [ -n "$MEMBER_TOKEN" ] && [ -n "$BLOG_ID" ]; then
     COMMENT_RESPONSE=$(make_request "POST" "/comments" '{
-        "sourceType": "blog",
-        "sourceId": "'$BLOG_ID'",
+        "source_type": "blog",
+        "source_id": "'$BLOG_ID'",
         "content": "Bài viết test rất hay! Tôi cũng đồng ý với quan điểm này về Bitcoin."
     }' "Authorization: Bearer $MEMBER_TOKEN")
 
@@ -480,10 +480,10 @@ debug_state
 echo -n "Replying to comment... "
 if [ -n "$ADMIN_TOKEN" ] && [ -n "$BLOG_ID" ] && [ -n "$COMMENT_ID" ]; then
     REPLY_RESPONSE=$(make_request "POST" "/comments" '{
-        "sourceType": "blog",
-        "sourceId": "'$BLOG_ID'",
+        "source_type": "blog",
+        "source_id": "'$BLOG_ID'",
         "content": "Cảm ơn bạn đã đọc! Tôi sẽ tiếp tục cập nhật những phân tích mới.",
-        "parentId": "'$COMMENT_ID'"
+        "parent_id": "'$COMMENT_ID'"
     }' "Authorization: Bearer $ADMIN_TOKEN")
 
     if check_response "$REPLY_RESPONSE" "Comment Reply"; then
@@ -500,8 +500,8 @@ fi
 echo -n "Liking blog post... "
 if [ -n "$MEMBER_TOKEN" ] && [ -n "$BLOG_ID" ]; then
     LIKE_RESPONSE=$(make_request "POST" "/likes" '{
-        "sourceType": "blog",
-        "sourceId": "'$BLOG_ID'"
+        "source_type": "blog",
+        "source_id": "'$BLOG_ID'"
     }' "Authorization: Bearer $MEMBER_TOKEN")
 
     check_response "$LIKE_RESPONSE" "Blog Like"
@@ -513,8 +513,8 @@ fi
 echo -n "Unliking blog post... "
 if [ -n "$MEMBER_TOKEN" ] && [ -n "$BLOG_ID" ]; then
     UNLIKE_RESPONSE=$(make_request "POST" "/likes" '{
-        "sourceType": "blog",
-        "sourceId": "'$BLOG_ID'"
+        "source_type": "blog",
+        "source_id": "'$BLOG_ID'"
     }' "Authorization: Bearer $MEMBER_TOKEN")
 
     check_response "$UNLIKE_RESPONSE" "Blog Unlike"
@@ -525,7 +525,7 @@ fi
 # Test 21: List Comments
 echo -n "Listing comments for blog... "
 if [ -n "$BLOG_ID" ]; then
-    COMMENTS_LIST_RESPONSE=$(make_request "GET" "/comments?sourceType=blog&sourceId=$BLOG_ID")
+    COMMENTS_LIST_RESPONSE=$(make_request "GET" "/comments?source_type=blog&source_id=$BLOG_ID")
     check_response "$COMMENTS_LIST_RESPONSE" "Comments List"
 else
     echo -e "${RED}❌ Comments List (Missing blog ID)${NC}"

@@ -80,8 +80,8 @@ export class SeedDatabase implements OnApplicationBootstrap {
       const hashedPassword = await bcrypt.hash(password, 10);
       existingUser.password = hashedPassword;
       existingUser.role = role;
-      existingUser.name = name;
-      existingUser.avatarUrl = avatarUrl;
+      existingUser.user_name = name;
+      existingUser.avatar_url = avatarUrl;
       await this.userRepository.save(existingUser);
       
       console.log(`   🔄 Updated: ${name} (${role})`);
@@ -93,11 +93,11 @@ export class SeedDatabase implements OnApplicationBootstrap {
     
     const user = this.userRepository.create({
       id, // Use specific ID
-      name,
+      user_name: name,
       email,
       password: hashedPassword,
       role,
-      avatarUrl,
+      avatar_url: avatarUrl,
     });
 
     await this.userRepository.save(user);

@@ -21,14 +21,14 @@ export class BlogEntity extends BaseEntity {
   @Column({ type: 'text', nullable: true })
   excerpt: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  thumbnailUrl: string;
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'thumbnail_url' })
+  thumbnail_url: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  metaTitle: string;
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'meta_title' })
+  meta_title: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  metaDescription: string;
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'meta_description' })
+  meta_description: string;
 
   @ManyToOne(() => CategoryEntity, (category) => category.blogs, { nullable: true })
   category: CategoryEntity;
@@ -36,17 +36,17 @@ export class BlogEntity extends BaseEntity {
   @ManyToOne(() => UserEntity, (user) => user.blogs)
   author: UserEntity;
 
-  @Column({ type: 'boolean', default: false })
-  isPublished: boolean;
+  @Column({ type: 'boolean', default: false, name: 'is_published' })
+  is_published: boolean;
 
-  @Column({ type: 'int', default: 0 })
-  viewCount: number;
+  @Column({ type: 'int', default: 0, name: 'view_count' })
+  view_count: number;
 
-  @Column({ type: 'int', default: 0 })
-  likeCount: number;
+  @Column({ type: 'int', default: 0, name: 'like_count' })
+  like_count: number;
 
-  @Column({ type: 'timestamp', nullable: true })
-  publishedAt: Date;
+  @Column({ type: 'timestamp', nullable: true, name: 'published_at' })
+  published_at: Date;
 
   @OneToMany(() => BlogTagEntity, (blogTag) => blogTag.blog)
   blogTags: BlogTagEntity[];

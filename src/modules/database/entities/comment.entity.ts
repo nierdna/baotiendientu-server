@@ -3,22 +3,22 @@ import { BaseEntity } from './base.entity';
 import { UserEntity } from './user.entity';
 
 @Entity('comments')
-@Index(['sourceType', 'sourceId'])
+@Index(['source_type', 'source_id'])
 export class CommentEntity extends BaseEntity {
-  @Column({ type: 'varchar', length: 50 })
-  sourceType: string; // e.g., 'blog', 'forum_thread'
+  @Column({ type: 'varchar', length: 50, name: 'source_type' })
+  source_type: string; // e.g., 'blog', 'forum_thread'
 
-  @Column({ type: 'uuid' })
-  sourceId: string;
+  @Column({ type: 'uuid', name: 'source_id' })
+  source_id: string;
 
   @ManyToOne(() => UserEntity, (user) => user.comments, { nullable: true })
   user: UserEntity;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  guestName: string;
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'guest_name' })
+  guest_name: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  guestEmail: string;
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'guest_email' })
+  guest_email: string;
 
   @Column({ type: 'text' })
   content: string;

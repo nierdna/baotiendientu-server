@@ -5,11 +5,11 @@ export class CreateCommentDto {
   @ApiProperty({ description: "Source type", enum: ['blog', 'forum_thread'] })
   @IsString()
   @IsIn(['blog', 'forum_thread'])
-  sourceType: string;
+  source_type: string;
 
   @ApiProperty({ description: 'Source ID (blog.id or forum_thread.id)' })
   @IsUUID()
-  sourceId: string;
+  source_id: string;
 
   @ApiProperty({ description: 'Content', maxLength: 2000 })
   @IsString()
@@ -20,7 +20,7 @@ export class CreateCommentDto {
   @ApiPropertyOptional({ description: 'Parent comment ID' })
   @IsUUID()
   @IsOptional()
-  parentId?: string;
+  parent_id?: string;
 }
 
 export class UpdateCommentDto {
@@ -36,19 +36,19 @@ export class CommentResponseDto {
   id: string;
 
   @ApiProperty({ description: 'Source type' })
-  sourceType: string;
+  source_type: string;
 
   @ApiProperty({ description: 'Source ID' })
-  sourceId: string;
+  source_id: string;
 
   @ApiProperty({ description: 'User ID' })
-  userId: string;
+  user_id: string;
 
   @ApiProperty({ description: 'Content' })
   content: string;
 
   @ApiPropertyOptional({ description: 'Parent ID' })
-  parentId?: string;
+  parent_id?: string;
 
   @ApiProperty({ description: 'Created at' })
   created_at: Date;

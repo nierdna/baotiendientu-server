@@ -38,14 +38,14 @@ Description:
 - Standard response format:
   ```json
   {
-    "statusCode": 200, // HTTP status code
+    "status_code": 200, // HTTP status code (snake_case)
     "message": "Success message", // Human-readable message
     "data": {}, // Actual response data (object, array, or primitive)
     "pagination": { // Optional, include only for paginated responses
       "page": 1,
       "limit": 10,
-      "totalItems": 100,
-      "totalPages": 10
+      "total_items": 100, // snake_case
+      "total_pages": 10 // snake_case
     },
     "timestamp": "2023-06-15T10:30:00Z" // ISO timestamp of the response
   }
@@ -53,27 +53,45 @@ Description:
 - Error responses must follow the same structure with appropriate status codes and error messages
 - Never return raw data directly without following this structure
 
+# API Key Naming Convention (SNAKE_CASE)
+## Request & Response Keys
+- **TẤT CẢ key trong API phải dùng snake_case:**
+  - ✅ Correct: `user_id`, `created_at`, `updated_at`, `email`, `password`
+  - ❌ Wrong: `userId`, `createdAt`, `updatedAt`, `userEmail`, `userPassword`
+
+## Implementation
+- **Response**: Đã có `SnakeCaseInterceptor` tự động chuyển đổi toàn bộ response sang snake_case
+- **Request**: Đã có `SnakeCaseRequestPipe` tự động chuyển đổi toàn bộ request sang snake_case
+- **DTO Properties**: Đặt tên property trong DTO theo snake_case (ví dụ: `user_name`, `created_at`)
+
+## Examples
+```typescript
+// ✅ Correct DTO
+export class CreateUserDto {
+  @ApiProperty({ example: 'john_doe' })
+  user_name: string; // snake_case
+
+  @ApiProperty({ example: 'john@example.com' })
+  email: string;
+
+  @ApiProperty({ example: 'password123' })
+  password: string;
+}
+
+// ✅ Correct Response
+{
+  "id": "123",
+  "user_name": "john_doe",
+  "email": "john@example.com",
+  "created_at": "2023-06-15T10:30:00Z",
+  "updated_at": "2023-06-15T10:30:00Z"
+}
+```
+
 # Error Handling Rules
 - All data manipulation functions must have try/catch
 - Log complete error information
 - Return clear, understandable error messages to users
-
-# Security Rules
-- Do not store credentials in code
-- Use environment variables for sensitive information
-- Validate input data
-
-# Quy tắc đặt tên key trả về cho client
-- Tất cả key trong response trả về cho client (API) phải là **snake_case** (ví dụ: created_at, updated_at, user_id)
-- Tất cả key trong request gửi lên API cũng phải là **snake_case** (ví dụ: user_name, email, password)
-- Không sử dụng camelCase hoặc kebab-case cho key trả về
-- Đã có interceptor tự động chuyển đổi toàn bộ key sang snake_case cho response
-- Đã có pipe tự động chuyển đổi toàn bộ key sang snake_case cho request
-
-# Security Rules
-- Do not store credentials in code
-- Use environment variables for sensitive information
-- Validate input data
 
 # Security Rules
 - Do not store credentials in code

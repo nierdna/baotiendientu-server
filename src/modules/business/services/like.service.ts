@@ -1,6 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Inject } from '@nestjs/common/decorators';
-import { LikeRepository, BlogRepository, ForumThreadRepository } from '@/database/repositories';
+import { LikeRepository } from '@/database/repositories/like.repository';
+import { BlogRepository } from '@/database/repositories/blog.repository';
+import { ForumThreadRepository } from '@/database/repositories/forum-thread.repository';
 import { ToggleLikeDto } from '@/api/dtos/like.dto';
 
 @Injectable()
@@ -11,36 +13,36 @@ export class LikeService {
     @Inject(ForumThreadRepository) private readonly threadRepo: ForumThreadRepository,
   ) {}
 
-  private async updateLikeCount(sourceType: string, sourceId: string) {
-    const count = await this.likeRepo.count({ where: { sourceType, sourceId } });
-    if (sourceType === 'blog') {
-      await this.blogRepo.update({ id: sourceId }, { likeCount: count });
+  private async updateLikeCount(source_type: string, source_id: string) {
+    const count = await this.likeRepo.count({ where: { source_type, source_id } });
+    if (source_type === 'blog') {
+      await this.blogRepo.update({ id: source_id }, { like_count: count });
     } else {
-      await this.threadRepo.update({ id: sourceId }, { likeCount: count });
+      await this.threadRepo.update({ id: source_id }, { like_count: count });
     }
   }
 
-  async toggle(userId: string, dto: ToggleLikeDto): Promise<{ liked: boolean; likeCount: number }> {
+  async toggle(userId: string, dto: ToggleLikeDto): Promise<{ liked: boolean; like_count: number }> {
     // ensure source exists
-    if (dto.sourceType === 'blog') {
-      if (!(await this.blogRepo.exists({ where: { id: dto.sourceId } }))) {
+    if (dto.source_type === 'blog') {
+      if (!(await this.blogRepo.exists({ where: { id: dto.source_id } }))) {
         throw new NotFoundException('Blog not found');
       }
     } else {
-      if (!(await this.threadRepo.exists({ where: { id: dto.sourceId } }))) {
+      if (!(await this.threadRepo.exists({ where: { id: dto.source_id } }))) {
         throw new NotFoundException('Thread not found');
       }
     }
 
-    const existing = await this.likeRepo.findOne({ where: { sourceType: dto.sourceType, sourceId: dto.sourceId, user: { id: userId } }, relations: ['user'] });
+    const existing = await this.likeRepo.findOne({ where: { source_type: dto.source_type, source_id: dto.source_id, user: { id: userId } }, relations: ['user'] });
     if (existing) {
       await this.likeRepo.remove(existing);
     } else {
-      await this.likeRepo.save(this.likeRepo.create({ sourceType: dto.sourceType, sourceId: dto.sourceId, user: { id: userId } as any }));
+      await this.likeRepo.save(this.likeRepo.create({ source_type: dto.source_type, source_id: dto.source_id, user: { id: userId } as any }));
     }
 
-    await this.updateLikeCount(dto.sourceType, dto.sourceId);
-    const likeCount = await this.likeRepo.count({ where: { sourceType: dto.sourceType, sourceId: dto.sourceId } });
-    return { liked: !existing, likeCount };
+    await this.updateLikeCount(dto.source_type, dto.source_id);
+    const like_count = await this.likeRepo.count({ where: { source_type: dto.source_type, source_id: dto.source_id } });
+    return { liked: !existing, like_count };
   }
 } 

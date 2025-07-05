@@ -1,0 +1,143 @@
+# API Standards - Báo Tiền Điện Tử
+
+## 🐍 Snake Case Convention
+
+### **BẮT BUỘC**: Tất cả API keys phải dùng snake_case
+
+#### ✅ **Correct Examples:**
+```json
+{
+  "user_id": "123",
+  "created_at": "2023-06-15T10:30:00Z",
+  "updated_at": "2023-06-15T10:30:00Z",
+  "deleted_at": null,
+  "user_name": "John Doe",
+  "email": "john@example.com",
+  "avatar_url": "https://example.com/avatar.jpg",
+  "status_code": 200,
+  "total_items": 100,
+  "total_pages": 10
+}
+```
+
+#### ❌ **Wrong Examples:**
+```json
+{
+  "userId": "123",           // ❌ camelCase
+  "createdAt": "2023-06-15", // ❌ camelCase
+  "userName": "John",        // ❌ camelCase
+  "avatarUrl": "https://...", // ❌ camelCase
+  "statusCode": 200,         // ❌ camelCase
+  "totalItems": 100          // ❌ camelCase
+}
+```
+
+## 🔧 Implementation
+
+### **Response Interceptor**
+- **File**: `src/shared/interceptors/snake-case.interceptor.ts`
+- **Chức năng**: Tự động chuyển đổi toàn bộ response sang snake_case
+- **Áp dụng**: Toàn bộ API responses
+
+### **Request Pipe**
+- **File**: `src/shared/pipes/snake-case-request.pipe.ts`
+- **Chức năng**: Tự động chuyển đổi toàn bộ request sang snake_case
+- **Áp dụng**: Toàn bộ API requests
+
+### **DTO Properties**
+- Đặt tên property trong DTO theo snake_case
+- Ví dụ: `user_name`, `created_at`, `updated_at`
+
+## 📝 Code Examples
+
+### **DTO Definition**
+```typescript
+export class CreateUserDto {
+  @ApiProperty({ example: 'john_doe' })
+  user_name: string; // ✅ snake_case
+
+  @ApiProperty({ example: 'john@example.com' })
+  email: string;
+
+  @ApiProperty({ example: 'password123' })
+  password: string;
+}
+
+export class UserResponseDto {
+  @ApiProperty({ description: 'User ID' })
+  id: string;
+
+  @ApiProperty({ description: 'User name' })
+  user_name: string; // ✅ snake_case
+
+  @ApiProperty({ description: 'Email address' })
+  email: string;
+
+  @ApiProperty({ description: 'Avatar URL' })
+  avatar_url: string; // ✅ snake_case
+
+  @ApiProperty({ description: 'Created timestamp' })
+  created_at: Date; // ✅ snake_case
+
+  @ApiProperty({ description: 'Updated timestamp' })
+  updated_at: Date; // ✅ snake_case
+}
+```
+
+### **Entity Properties**
+```typescript
+@Entity('users')
+export class UserEntity extends BaseEntity {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column({ name: 'user_name' }) // ✅ snake_case
+  user_name: string;
+
+  @Column({ name: 'email' })
+  email: string;
+
+  @Column({ name: 'avatar_url' }) // ✅ snake_case
+  avatar_url: string;
+
+  @CreateDateColumn({ name: 'created_at' }) // ✅ snake_case
+  created_at: Date;
+
+  @UpdateDateColumn({ name: 'updated_at' }) // ✅ snake_case
+  updated_at: Date;
+}
+```
+
+## 🚀 Benefits
+
+1. **Consistency**: Toàn bộ API đồng nhất snake_case
+2. **Frontend Integration**: Dễ dàng tích hợp với frontend/mobile
+3. **Documentation**: Swagger docs tự động hiển thị snake_case
+4. **Maintenance**: Dễ maintain và debug
+5. **Standards**: Tuân thủ chuẩn API quốc tế
+
+## ⚠️ Important Notes
+
+- **Không được dùng camelCase** cho bất kỳ key nào trong API
+- **Không được dùng kebab-case** cho key (chỉ dùng cho endpoint paths)
+- **Tất cả DTO properties** phải đặt tên snake_case
+- **Tất cả entity columns** phải đặt tên snake_case
+- **Interceptor và Pipe** đã được cấu hình tự động
+
+## 🔍 Testing
+
+Để test snake_case convention:
+
+```bash
+# Test Response (sẽ trả về snake_case)
+curl -X GET "http://localhost:8080/users" | jq
+
+# Test Request (có thể gửi camelCase, sẽ tự động chuyển đổi)
+curl -X POST "http://localhost:8080/users" \
+  -H "Content-Type: application/json" \
+  -d '{"userName":"Test","userEmail":"test@example.com"}' | jq
+```
+description:
+globs:
+alwaysApply: false
+---

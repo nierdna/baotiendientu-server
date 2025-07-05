@@ -28,22 +28,22 @@ export class CreateBlogDto {
   @ApiPropertyOptional({ description: 'Thumbnail URL' })
   @IsString()
   @IsOptional()
-  thumbnailUrl?: string;
+  thumbnail_url?: string;
 
   @ApiPropertyOptional({ description: 'Meta title', maxLength: 255 })
   @IsString()
   @IsOptional()
-  metaTitle?: string;
+  meta_title?: string;
 
   @ApiPropertyOptional({ description: 'Meta description', maxLength: 255 })
   @IsString()
   @IsOptional()
-  metaDescription?: string;
+  meta_description?: string;
 
   @ApiPropertyOptional({ description: 'Category ID' })
   @IsUUID()
   @IsOptional()
-  categoryId?: string;
+  category_id?: string;
 }
 
 export class UpdateBlogDto {
@@ -66,27 +66,27 @@ export class UpdateBlogDto {
   @ApiPropertyOptional({ description: 'Thumbnail URL' })
   @IsString()
   @IsOptional()
-  thumbnailUrl?: string;
+  thumbnail_url?: string;
 
   @ApiPropertyOptional({ description: 'Meta title', maxLength: 255 })
   @IsString()
   @IsOptional()
-  metaTitle?: string;
+  meta_title?: string;
 
   @ApiPropertyOptional({ description: 'Meta description', maxLength: 255 })
   @IsString()
   @IsOptional()
-  metaDescription?: string;
+  meta_description?: string;
 
   @ApiPropertyOptional({ description: 'Category ID' })
   @IsUUID()
   @IsOptional()
-  categoryId?: string;
+  category_id?: string;
 
   @ApiPropertyOptional({ description: 'Publish status', example: true })
   @IsBoolean()
   @IsOptional()
-  isPublished?: boolean;
+  is_published?: boolean;
 
   @ApiPropertyOptional({ description: 'SEO slug', maxLength: 255 })
   @IsString()
@@ -112,31 +112,31 @@ export class BlogResponseDto {
   excerpt?: string;
 
   @ApiPropertyOptional({ description: 'Thumbnail URL' })
-  thumbnailUrl?: string;
+  thumbnail_url?: string;
 
   @ApiPropertyOptional({ description: 'Meta title' })
-  metaTitle?: string;
+  meta_title?: string;
 
   @ApiPropertyOptional({ description: 'Meta description' })
-  metaDescription?: string;
+  meta_description?: string;
 
   @ApiPropertyOptional({ description: 'Category ID' })
-  categoryId?: string;
+  category_id?: string;
 
   @ApiProperty({ description: 'Author ID' })
-  authorId: string;
+  author_id: string;
 
   @ApiProperty({ description: 'Is published', example: false })
-  isPublished: boolean;
+  is_published: boolean;
 
   @ApiProperty({ description: 'View count', example: 0 })
-  viewCount: number;
+  view_count: number;
 
   @ApiProperty({ description: 'Like count', example: 0 })
-  likeCount: number;
+  like_count: number;
 
   @ApiPropertyOptional({ description: 'Published at' })
-  publishedAt?: Date;
+  published_at?: Date;
 
   @ApiProperty({ description: 'Created at' })
   created_at: Date;
@@ -152,15 +152,15 @@ export class BlogResponseDto {
       slug: entity.slug,
       content: entity.content,
       excerpt: entity.excerpt,
-      thumbnailUrl: entity.thumbnailUrl,
-      metaTitle: entity.metaTitle,
-      metaDescription: entity.metaDescription,
-      categoryId: entity.category?.id,
-      authorId: entity.author?.id || null,
-      isPublished: entity.isPublished,
-      viewCount: entity.viewCount,
-      likeCount: entity.likeCount,
-      publishedAt: entity.publishedAt,
+      thumbnail_url: entity.thumbnail_url,
+      meta_title: entity.meta_title,
+      meta_description: entity.meta_description,
+      category_id: entity.category?.id,
+      author_id: entity.author?.id || null,
+      is_published: entity.is_published,
+      view_count: entity.view_count,
+      like_count: entity.like_count,
+      published_at: entity.published_at,
       created_at: entity.created_at,
       updated_at: entity.updated_at,
     };

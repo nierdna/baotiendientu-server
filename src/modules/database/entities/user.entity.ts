@@ -8,8 +8,8 @@ import { LikeEntity } from './like.entity';
 @Entity('users')
 @Index(['email'], { unique: true })
 export class UserEntity extends BaseEntity {
-  @Column({ type: 'varchar', length: 255 })
-  name: string;
+  @Column({ type: 'varchar', length: 255, name: 'user_name' })
+  user_name: string;
 
   @Column({ type: 'varchar', length: 255, unique: true })
   email: string;
@@ -17,8 +17,8 @@ export class UserEntity extends BaseEntity {
   @Column({ type: 'varchar', length: 255 })
   password: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  avatarUrl: string;
+  @Column({ type: 'varchar', length: 255, nullable: true, name: 'avatar_url' })
+  avatar_url: string;
 
   @Column({ type: 'varchar', length: 50, default: 'member' })
   role: string;
