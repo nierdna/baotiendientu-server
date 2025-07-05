@@ -7,3 +7,4 @@ export * from './tag.controller';
 export * from './comment.controller';
 export * from './like.controller';
 export * from './media.controller';
+export * from './test-upload.controller';

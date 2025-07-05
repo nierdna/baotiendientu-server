@@ -27,26 +27,8 @@ export class MediaService {
         filename: file.filename
       });
 
-      // Đọc file từ disk và chuyển sang base64
-      let base64: string;
-      if (file.buffer && file.buffer.length > 0) {
-        base64 = file.buffer.toString('base64');
-      } else {
-        const fs = require('fs');
-        const filePath = path.join('./temp-uploads', file.filename);
-        try {
-          if (fs.existsSync(filePath)) {
-            const fileBuffer = fs.readFileSync(filePath);
-            base64 = fileBuffer.toString('base64');
-            // Auto cleanup - xóa file temp ngay lập tức
-            fs.unlinkSync(filePath);
-          } else {
-            throw new BadRequestException(`File không tồn tại: ${filePath}`);
-          }
-        } catch (error) {
-          throw new BadRequestException(`Lỗi đọc file: ${error.message}`);
-        }
-      }
+      // Chuyển buffer sang base64 (memory storage)
+      const base64 = file.buffer.toString('base64');
       
       if (!base64 || base64.length < 100) throw new BadRequestException('File buffer lỗi hoặc rỗng');
 

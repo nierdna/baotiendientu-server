@@ -68,16 +68,7 @@ export class MediaController {
   async uploadFile(@Req() req: Request) {
     return new Promise((resolve, reject) => {
       const upload = multer({
-        storage: multer.diskStorage({
-          destination: './temp-uploads',
-          filename: (req, file, cb) => {
-            const randomName = Array(32)
-              .fill(null)
-              .map(() => Math.round(Math.random() * 16).toString(16))
-              .join('');
-            cb(null, `${randomName}-${file.originalname}`);
-          },
-        }),
+        storage: multer.memoryStorage(),
         limits: {
           fileSize: 10 * 1024 * 1024, // 10MB
         },
