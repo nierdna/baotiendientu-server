@@ -1,10 +1,11 @@
-import { Controller, Post, Get, Put, Delete, Body, Query, Param } from '@nestjs/common';
+import { Controller, Post, Get, Put, Delete, Body, Query, Param, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { CommentService } from '@/business/services/comment.service';
 import { CreateCommentDto, UpdateCommentDto, CommentResponseDto } from '@/api/dtos/comment.dto';
 import { ApiBaseResponse } from '@/shared/swagger/decorator/api-response.decorator';
 import { BaseResponse } from '@/shared/swagger/response/base.response';
 import { CurrentUserId } from '@/api/decorator/user.decorator';
+import { JwtAuthGuard } from '@/api/guards/jwt-auth.guard';
 
 @ApiTags('Comment')
 @Controller('comments')
@@ -15,6 +16,7 @@ export class CommentController {
   @ApiOperation({ summary: 'Create comment' })
   @ApiBearerAuth()
   @ApiBaseResponse(CommentResponseDto)
+  @UseGuards(JwtAuthGuard)
   async create(@Body() dto: CreateCommentDto, @CurrentUserId() userId: string) {
     const comment = await this.commentService.create(userId, dto);
     return new BaseResponse(comment);
@@ -34,6 +36,7 @@ export class CommentController {
   @ApiOperation({ summary: 'Update own comment' })
   @ApiBearerAuth()
   @ApiBaseResponse(CommentResponseDto)
+  @UseGuards(JwtAuthGuard)
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateCommentDto,
@@ -47,6 +50,7 @@ export class CommentController {
   @ApiOperation({ summary: 'Delete own comment' })
   @ApiBearerAuth()
   @ApiBaseResponse()
+  @UseGuards(JwtAuthGuard)
   async remove(@Param('id') id: string, @CurrentUserId() userId: string) {
     await this.commentService.remove(id, userId);
     return new BaseResponse(null, 200, 'Deleted');

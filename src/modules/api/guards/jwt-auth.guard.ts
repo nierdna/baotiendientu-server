@@ -36,8 +36,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
         throw new UnauthorizedException('User not found');
       }
       
-      console.log(`🔍 [JwtAuthGuard] user found: ID: ${user.id}, Name: ${user.name}, Email: ${user.email}, Role: ${user.role}`);
-      
       // Add user to request
       request.user = user;
       return true;

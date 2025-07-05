@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Body, Param, Put, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards } from '@nestjs/common';
 import { ForumThreadService } from '@/business/services/forum-thread.service';
 import { CreateForumThreadDto, UpdateForumThreadDto, ForumThreadResponseDto } from '@/api/dtos/forum-thread.dto';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { ApiBaseResponse } from '@/shared/swagger/decorator/api-response.decorator';
 import { BaseResponse } from '@/shared/swagger/response/base.response';
 import { CurrentUserId } from '@/api/decorator/user.decorator';
+import { JwtAuthGuard } from '@/api/guards/jwt-auth.guard';
 
 @ApiTags('ForumThread')
 @Controller('forum-threads')
@@ -15,6 +16,7 @@ export class ForumThreadController {
   @ApiOperation({ summary: 'Create a new forum thread' })
   @ApiBearerAuth()
   @ApiBaseResponse(ForumThreadResponseDto)
+  @UseGuards(JwtAuthGuard)
   async create(
     @Body() dto: CreateForumThreadDto,
     @CurrentUserId() userId: string,
@@ -43,6 +45,7 @@ export class ForumThreadController {
   @ApiOperation({ summary: 'Update own forum thread' })
   @ApiBearerAuth()
   @ApiBaseResponse(ForumThreadResponseDto)
+  @UseGuards(JwtAuthGuard)
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateForumThreadDto,
@@ -56,6 +59,7 @@ export class ForumThreadController {
   @ApiOperation({ summary: 'Delete own forum thread' })
   @ApiBearerAuth()
   @ApiBaseResponse(ForumThreadResponseDto)
+  @UseGuards(JwtAuthGuard)
   async remove(@Param('id') id: string, @CurrentUserId() userId: string) {
     await this.forumThreadService.remove(id, userId);
     return new BaseResponse(null, 200, 'Deleted');

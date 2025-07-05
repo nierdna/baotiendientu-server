@@ -1,9 +1,10 @@
-import { Controller, Post, Get, Put, Delete, Param, Body } from '@nestjs/common';
+import { Controller, Post, Get, Put, Delete, Param, Body, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { CategoryService } from '@/business/services/category.service';
 import { CreateCategoryDto, UpdateCategoryDto, CategoryResponseDto } from '@/api/dtos/category.dto';
 import { ApiBaseResponse } from '@/shared/swagger/decorator/api-response.decorator';
 import { BaseResponse } from '@/shared/swagger/response/base.response';
+import { JwtAuthGuard } from '@/api/guards/jwt-auth.guard';
 
 @ApiTags('Category')
 @Controller('categories')
@@ -14,6 +15,7 @@ export class CategoryController {
   @ApiOperation({ summary: 'Create category' })
   @ApiBearerAuth()
   @ApiBaseResponse(CategoryResponseDto)
+  @UseGuards(JwtAuthGuard)
   async create(@Body() dto: CreateCategoryDto) {
     const cat = await this.categoryService.create(dto);
     return new BaseResponse(cat);
@@ -39,6 +41,7 @@ export class CategoryController {
   @ApiOperation({ summary: 'Update category' })
   @ApiBearerAuth()
   @ApiBaseResponse(CategoryResponseDto)
+  @UseGuards(JwtAuthGuard)
   async update(@Param('id') id: string, @Body() dto: UpdateCategoryDto) {
     const cat = await this.categoryService.update(id, dto);
     return new BaseResponse(cat);
@@ -48,6 +51,7 @@ export class CategoryController {
   @ApiOperation({ summary: 'Delete category' })
   @ApiBearerAuth()
   @ApiBaseResponse()
+  @UseGuards(JwtAuthGuard)
   async remove(@Param('id') id: string) {
     await this.categoryService.remove(id);
     return new BaseResponse(null, 200, 'Deleted');

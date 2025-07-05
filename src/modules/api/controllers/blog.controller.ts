@@ -21,8 +21,7 @@ export class BlogController {
     @Body() dto: CreateBlogDto,
     @CurrentUserId() userId: string,
   ) {
-    console.log(`🔍 [BlogController] create - userId: ${userId}`);
-    console.log(`🔍 [BlogController] dto:`, JSON.stringify(dto, null, 2));
+
     const blog = await this.blogService.create(userId, dto);
     return new BaseResponse(BlogResponseDto.fromEntity(blog));
   }
@@ -36,15 +35,7 @@ export class BlogController {
     return new BaseResponse(blogDtos);
   }
 
-  @Get('debug/user')
-  @ApiOperation({ summary: 'Debug current user' })
-  @ApiBearerAuth()
-  @ApiBaseResponse()
-  @UseGuards(JwtAuthGuard)
-  async debugUser(@CurrentUserId() userId: string, @CurrentUserRole() userRole: string) {
-    console.log(`🔍 [BlogController] debugUser - userId: ${userId}, userRole: ${userRole}`);
-    return new BaseResponse({ userId, userRole });
-  }
+
 
   @Get(':id')
   @ApiOperation({ summary: 'Get blog detail' })

@@ -13,16 +13,12 @@ export class BlogService {
   ) {}
 
   async create(authorId: string, dto: CreateBlogDto): Promise<BlogEntity> {
-    console.log(`🔍 [BlogService] create - authorId: ${authorId}`);
-    console.log(`🔍 [BlogService] dto:`, JSON.stringify(dto, null, 2));
-    
     if (await this.blogRepo.findOne({ where: { slug: dto.slug } })) {
       throw new ConflictException('Slug already exists');
     }
 
     // Load actual user entity
     const author = await this.userRepo.findOne({ where: { id: authorId } });
-    console.log(`🔍 [BlogService] author found:`, author ? `ID: ${author.id}, Name: ${author.name}, Email: ${author.email}` : 'NOT FOUND');
     
     if (!author) throw new NotFoundException('Author not found');
 
