@@ -3,7 +3,6 @@ export * from './user.repository';
 export * from './category.repository';
 export * from './tag.repository';
 export * from './blog.repository';
-export * from './blog-tag.repository';
 export * from './forum.repository';
 export * from './forum-thread.repository';
 export * from './comment.repository';

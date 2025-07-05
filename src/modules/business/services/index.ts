@@ -6,3 +6,4 @@ export * from './category.service';
 export * from './tag.service';
 export * from './comment.service';
 export * from './like.service';
+export * from './media.service';

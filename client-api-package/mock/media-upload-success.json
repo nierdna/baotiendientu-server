@@ -1,0 +1,8 @@
+{
+  "status_code": 200,
+  "message": "File uploaded successfully",
+  "data": {
+    "url": "https://s3-website-r1.s3cloud.vn/hsa/2025-07-05/1720185600000.jpg"
+  },
+  "timestamp": "2025-07-05T10:00:00Z"
+} 

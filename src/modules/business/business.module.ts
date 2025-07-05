@@ -10,8 +10,9 @@ import { CategoryService } from './services/category.service';
 import { TagService } from './services/tag.service';
 import { CommentService } from './services/comment.service';
 import { LikeService } from './services/like.service';
+import { MediaService } from './services/media.service';
 
-const services = [OpenAIService, ForumThreadService, UserService, BlogService, CategoryService, TagService, CommentService, LikeService];
+const services = [OpenAIService, ForumThreadService, UserService, BlogService, CategoryService, TagService, CommentService, LikeService, MediaService];
 
 @Module({
   imports: [

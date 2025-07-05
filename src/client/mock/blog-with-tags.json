@@ -1,0 +1,37 @@
+{
+  "status_code": 201,
+  "message": "Blog created successfully",
+  "data": {
+    "id": "blog-uuid-123",
+    "title": "Bản tin thị trường Crypto tháng 7/2025",
+    "slug": "ban-tin-thi-truong-crypto-thang-7-2025",
+    "content": "Thị trường crypto đang có những biến động mạnh với Bitcoin vượt ngưỡng $50,000. Các altcoin cũng có dấu hiệu phục hồi tích cực...",
+    "excerpt": "Tổng quan thị trường crypto tháng 7/2025",
+    "thumbnail_url": "https://s3-website-r1.s3cloud.vn/hsa/2025-07-05/1720185600000.jpg",
+    "category_id": "category-uuid-456",
+    "author_id": "user-uuid-789",
+    "is_published": false,
+    "view_count": 0,
+    "like_count": 0,
+    "created_at": "2025-07-05T10:00:00Z",
+    "updated_at": "2025-07-05T10:00:00Z",
+    "tags": [
+      {
+        "id": "tag-1",
+        "name": "blockchain",
+        "slug": "blockchain"
+      },
+      {
+        "id": "tag-2",
+        "name": "crypto",
+        "slug": "crypto"
+      },
+      {
+        "id": "tag-3",
+        "name": "bitcoin",
+        "slug": "bitcoin"
+      }
+    ]
+  },
+  "timestamp": "2025-07-05T10:00:00Z"
+} 

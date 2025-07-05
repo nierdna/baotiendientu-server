@@ -1,9 +1,8 @@
-import { Entity, Column, Index, ManyToOne, OneToMany, ManyToMany } from 'typeorm';
+import { Entity, Column, Index, ManyToOne, OneToMany, ManyToMany, JoinTable } from 'typeorm';
 import { BaseEntity } from './base.entity';
 import { CategoryEntity } from './category.entity';
 import { UserEntity } from './user.entity';
 import { TagEntity } from './tag.entity';
-import { BlogTagEntity } from './blog-tag.entity';
 
 @Entity('blogs')
 @Index(['slug'], { unique: true })
@@ -48,9 +47,17 @@ export class BlogEntity extends BaseEntity {
   @Column({ type: 'timestamp', nullable: true, name: 'published_at' })
   published_at: Date;
 
-  @OneToMany(() => BlogTagEntity, (blogTag) => blogTag.blog)
-  blogTags: BlogTagEntity[];
-
   @ManyToMany(() => TagEntity, (tag) => tag.blogs)
+  @JoinTable({
+    name: 'blog_tags',
+    joinColumn: {
+      name: 'blog_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'tag_id',
+      referencedColumnName: 'id',
+    },
+  })
   tags: TagEntity[];
 } 

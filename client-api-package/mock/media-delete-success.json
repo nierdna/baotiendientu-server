@@ -1,0 +1,8 @@
+{
+  "status_code": 200,
+  "message": "File deleted successfully",
+  "data": {
+    "deleted_key": "2025-07-05/1720185600000.jpg"
+  },
+  "timestamp": "2025-07-05T10:00:00Z"
+} 

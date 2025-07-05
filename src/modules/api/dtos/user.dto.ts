@@ -8,12 +8,12 @@ export class RegisterUserDto {
   @MaxLength(255)
   user_name: string;
 
-  @ApiProperty({ description: 'Email address', example: 'john@example.com' })
+  @ApiProperty({ description: 'Email address', example: 'admin@baotiendientu.com' })
   @IsEmail()
   @IsNotEmpty()
   email: string;
 
-  @ApiProperty({ description: 'Password', minLength: 6 })
+  @ApiProperty({ description: 'Password', minLength: 6, example: 'Admin123!' })
   @IsString()
   @MinLength(6)
   password: string;
@@ -25,11 +25,11 @@ export class RegisterUserDto {
 }
 
 export class LoginDto {
-  @ApiProperty({ description: 'Email address', example: 'john@example.com' })
+  @ApiProperty({ description: 'Email address', example: 'admin@baotiendientu.com' })
   @IsEmail()
   email: string;
 
-  @ApiProperty({ description: 'Password', minLength: 6 })
+  @ApiProperty({ description: 'Password', minLength: 6, example: 'Admin123!' })
   @IsString()
   password: string;
 }

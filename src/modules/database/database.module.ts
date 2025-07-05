@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 import { configDb } from './configs';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AdminConfigRepository, UserRepository, CategoryRepository, TagRepository, BlogRepository, BlogTagRepository, ForumRepository, ForumThreadRepository, CommentRepository, LikeRepository } from './repositories';
-import { AdminConfigEntity, UserEntity, CategoryEntity, TagEntity, BlogEntity, BlogTagEntity, ForumEntity, ForumThreadEntity, CommentEntity, LikeEntity } from './entities';
+import { AdminConfigRepository, UserRepository, CategoryRepository, TagRepository, BlogRepository, ForumRepository, ForumThreadRepository, CommentRepository, LikeRepository } from './repositories';
+import { AdminConfigEntity, UserEntity, CategoryEntity, TagEntity, BlogEntity, ForumEntity, ForumThreadEntity, CommentEntity, LikeEntity } from './entities';
 import { SeedDatabase } from './seeders/seed.database';
 
 const repositories = [
@@ -12,7 +12,6 @@ const repositories = [
   CategoryRepository,
   TagRepository,
   BlogRepository,
-  BlogTagRepository,
   ForumRepository,
   ForumThreadRepository,
   CommentRepository,
@@ -27,7 +26,6 @@ const entities = [
   CategoryEntity,
   TagEntity,
   BlogEntity,
-  BlogTagEntity,
   ForumEntity,
   ForumThreadEntity,
   CommentEntity,

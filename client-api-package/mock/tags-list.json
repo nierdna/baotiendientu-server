@@ -1,0 +1,63 @@
+{
+  "status_code": 200,
+  "message": "Success",
+  "data": [
+    {
+      "id": "tag-1",
+      "name": "blockchain",
+      "slug": "blockchain",
+      "created_at": "2025-07-05T10:00:00Z",
+      "updated_at": "2025-07-05T10:00:00Z"
+    },
+    {
+      "id": "tag-2",
+      "name": "crypto",
+      "slug": "crypto",
+      "created_at": "2025-07-05T10:00:00Z",
+      "updated_at": "2025-07-05T10:00:00Z"
+    },
+    {
+      "id": "tag-3",
+      "name": "bitcoin",
+      "slug": "bitcoin",
+      "created_at": "2025-07-05T10:00:00Z",
+      "updated_at": "2025-07-05T10:00:00Z"
+    },
+    {
+      "id": "tag-4",
+      "name": "ethereum",
+      "slug": "ethereum",
+      "created_at": "2025-07-05T10:00:00Z",
+      "updated_at": "2025-07-05T10:00:00Z"
+    },
+    {
+      "id": "tag-5",
+      "name": "defi",
+      "slug": "defi",
+      "created_at": "2025-07-05T10:00:00Z",
+      "updated_at": "2025-07-05T10:00:00Z"
+    },
+    {
+      "id": "tag-6",
+      "name": "nft",
+      "slug": "nft",
+      "created_at": "2025-07-05T10:00:00Z",
+      "updated_at": "2025-07-05T10:00:00Z"
+    },
+    {
+      "id": "tag-7",
+      "name": "trading",
+      "slug": "trading",
+      "created_at": "2025-07-05T10:00:00Z",
+      "updated_at": "2025-07-05T10:00:00Z"
+    },
+    {
+      "id": "tag-8",
+      "name": "analysis",
+      "slug": "analysis",
+      "created_at": "2025-07-05T10:00:00Z",
+      "updated_at": "2025-07-05T10:00:00Z"
+    }
+  ],
+  "timestamp": "2025-07-05T10:00:00Z"
+} 

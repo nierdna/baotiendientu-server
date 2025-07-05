@@ -1,0 +1,8 @@
+{
+  "status_code": 200,
+  "message": "Login successful",
+  "data": {
+    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjZTg4YWZkNS0wY2YwLTRmMTYtYjY4My0wZGU2MTVmOTU5NDYiLCJlbWFpbCI6ImFkbWluQGJhb3RpZW5kaWVudHUuY29tIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzM1NzI5NjAwLCJleHAiOjE3MzU3MzU2MDB9.example"
+  },
+  "timestamp": "2025-07-05T10:00:00Z"
+} 

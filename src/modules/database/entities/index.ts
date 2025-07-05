@@ -4,7 +4,6 @@ export * from './user.entity';
 export * from './category.entity';
 export * from './tag.entity';
 export * from './blog.entity';
-export * from './blog-tag.entity';
 export * from './forum.entity';
 export * from './forum-thread.entity';
 export * from './comment.entity';

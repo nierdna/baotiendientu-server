@@ -3,8 +3,10 @@ import { Inject } from '@nestjs/common/decorators';
 import { BlogRepository } from '@/database/repositories/blog.repository';
 import { CategoryRepository } from '@/database/repositories/category.repository';
 import { UserRepository } from '@/database/repositories/user.repository';
+import { TagRepository } from '@/database/repositories/tag.repository';
 import { CreateBlogDto, UpdateBlogDto } from '@/api/dtos/blog.dto';
 import { BlogEntity } from '@/database/entities/blog.entity';
+import { TagEntity } from '@/database/entities/tag.entity';
 
 @Injectable()
 export class BlogService {
@@ -12,6 +14,7 @@ export class BlogService {
     @Inject(BlogRepository) private readonly blogRepo: BlogRepository,
     @Inject(CategoryRepository) private readonly categoryRepo: CategoryRepository,
     @Inject(UserRepository) private readonly userRepo: UserRepository,
+    @Inject(TagRepository) private readonly tagRepo: TagRepository,
   ) {}
 
   async create(userId: string, dto: CreateBlogDto): Promise<BlogEntity> {
@@ -39,12 +42,68 @@ export class BlogService {
       view_count: 0,
     });
 
-    return this.blogRepo.save(blog);
+    const savedBlog = await this.blogRepo.save(blog);
+
+    // Handle tags if provided
+    if (dto.tags && dto.tags.length > 0) {
+      await this.handleBlogTags(savedBlog, dto.tags);
+    }
+
+    return savedBlog;
+  }
+
+  private async handleBlogTags(blog: BlogEntity, tagInputs: string[]): Promise<void> {
+    const tags: TagEntity[] = [];
+
+    for (const tagInput of tagInputs) {
+      let tag: TagEntity;
+
+      // Check if it's a UUID (existing tag)
+      if (this.isUUID(tagInput)) {
+        tag = await this.tagRepo.findOne({ where: { id: tagInput } });
+        if (!tag) {
+          throw new NotFoundException(`Tag with ID ${tagInput} not found`);
+        }
+      } else {
+        // Check if tag exists by slug
+        const slug = this.generateSlug(tagInput);
+        tag = await this.tagRepo.findOne({ where: { slug } });
+        
+        if (!tag) {
+          // Create new tag
+          tag = this.tagRepo.create({
+            name: tagInput,
+            slug: slug,
+          });
+          tag = await this.tagRepo.save(tag);
+        }
+      }
+
+      tags.push(tag);
+    }
+
+    // Update blog tags using ManyToMany relationship
+    blog.tags = tags;
+    await this.blogRepo.save(blog);
+  }
+
+  private isUUID(str: string): boolean {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    return uuidRegex.test(str);
+  }
+
+  private generateSlug(name: string): string {
+    return name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim();
   }
 
   async findAll(page = 1, limit = 10): Promise<{ blogs: BlogEntity[]; total: number }> {
     const [blogs, total] = await this.blogRepo.findAndCount({
-      relations: ['author', 'category'],
+      relations: ['author', 'category', 'tags'],
       skip: (page - 1) * limit,
       take: limit,
       order: { created_at: 'DESC' },
@@ -101,7 +160,14 @@ export class BlogService {
       blog.published_at = new Date();
     }
 
-    return this.blogRepo.save(blog);
+    const savedBlog = await this.blogRepo.save(blog);
+
+    // Handle tags if provided
+    if (dto.tags) {
+      await this.handleBlogTags(savedBlog, dto.tags);
+    }
+
+    return savedBlog;
   }
 
   async remove(id: string, userId: string, isAdmin = false): Promise<void> {

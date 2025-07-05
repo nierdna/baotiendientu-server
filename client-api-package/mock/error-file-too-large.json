@@ -1,0 +1,5 @@
+{
+  "status_code": 400,
+  "message": "File size exceeds maximum limit of 10MB",
+  "timestamp": "2025-07-05T10:00:00Z"
+} 

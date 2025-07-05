@@ -1,0 +1,10 @@
+{
+  "status_code": 400,
+  "message": "Bad Request",
+  "error": [
+    "user_name must be shorter than or equal to 255 characters",
+    "user_name should not be empty",
+    "user_name must be a string"
+  ],
+  "timestamp": "2025-07-05T10:00:00Z"
+} 

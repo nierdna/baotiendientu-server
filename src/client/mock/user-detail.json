@@ -1,0 +1,13 @@
+{
+  "status_code": 200,
+  "message": "User verified",
+  "data": {
+    "id": "ce88afd5-0cf0-4f16-b683-0de615f95946",
+    "user_name": "System Administrator",
+    "email": "admin@baotiendientu.com",
+    "role": "admin",
+    "avatar_url": "https://example.com/admin-avatar.jpg",
+    "created_at": "2025-07-05T10:00:00Z"
+  },
+  "timestamp": "2025-07-05T10:00:00Z"
+} 

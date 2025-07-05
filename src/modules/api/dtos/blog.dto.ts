@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength, MinLength } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString, IsUUID, MaxLength, MinLength, IsArray } from 'class-validator';
 import { BlogEntity } from '@/database/entities/blog.entity';
 
 export class CreateBlogDto {
@@ -44,6 +44,14 @@ export class CreateBlogDto {
   @IsUUID()
   @IsOptional()
   category_id?: string;
+
+  @ApiPropertyOptional({ 
+    description: 'Array of tag IDs or tag names', 
+    example: ['tag-1', 'tag-2'] 
+  })
+  @IsArray()
+  @IsOptional()
+  tags?: string[];
 }
 
 export class UpdateBlogDto {
@@ -93,6 +101,14 @@ export class UpdateBlogDto {
   @IsOptional()
   @MaxLength(255)
   slug?: string;
+
+  @ApiPropertyOptional({ 
+    description: 'Array of tag IDs or tag names', 
+    example: ['tag-1', 'tag-2'] 
+  })
+  @IsArray()
+  @IsOptional()
+  tags?: string[];
 }
 
 export class BlogResponseDto {
@@ -144,6 +160,15 @@ export class BlogResponseDto {
   @ApiProperty({ description: 'Updated at' })
   updated_at: Date;
 
+  @ApiPropertyOptional({ 
+    description: 'Array of tags associated with this blog',
+    example: [
+      { id: 'tag-1', name: 'blockchain', slug: 'blockchain' },
+      { id: 'tag-2', name: 'crypto', slug: 'crypto' }
+    ]
+  })
+  tags?: Array<{ id: string; name: string; slug: string }>;
+
   // Transform function to convert BlogEntity to BlogResponseDto
   static fromEntity(entity: BlogEntity): BlogResponseDto {
     return {
@@ -163,6 +188,11 @@ export class BlogResponseDto {
       published_at: entity.published_at,
       created_at: entity.created_at,
       updated_at: entity.updated_at,
+      tags: entity.tags?.map(tag => ({
+        id: tag.id,
+        name: tag.name,
+        slug: tag.slug
+      })) || [],
     };
   }
 } 

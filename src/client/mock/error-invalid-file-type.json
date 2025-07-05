@@ -1,0 +1,5 @@
+{
+  "status_code": 400,
+  "message": "File type not supported. Supported types: jpg, jpeg, png, gif, pdf, doc, docx, xls, xlsx, txt",
+  "timestamp": "2025-07-05T10:00:00Z"
+} 

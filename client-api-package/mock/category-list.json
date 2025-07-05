@@ -1,0 +1,25 @@
+{
+  "status_code": 200,
+  "message": "Categories retrieved successfully",
+  "data": [
+    {
+      "id": "35a892a4-0732-4dfb-84af-77fbbd898746",
+      "name": "Crypto",
+      "slug": "crypto",
+      "description": "Tin tức và phân tích về thị trường crypto"
+    },
+    {
+      "id": "46b9a3b5-1843-5efc-95bg-88gccd9a0b57",
+      "name": "Altcoin",
+      "slug": "altcoin",
+      "description": "Tin tức và phân tích về Altcoin"
+    },
+    {
+      "id": "57c0b4c6-2954-6fgd-a6ch-99hddda1c68",
+      "name": "DeFi",
+      "slug": "defi",
+      "description": "Tin tức và phân tích về DeFi"
+    }
+  ],
+  "timestamp": "2025-07-05T10:00:00Z"
+} 
