@@ -27,9 +27,24 @@ export class BlogService {
       if (!category) throw new NotFoundException('Category not found');
     }
 
+    // Auto-generate slug from title if not provided
+    let slug = dto.slug;
+    if (!slug) {
+      slug = this.generateSlug(dto.title);
+      
+      // Check if slug already exists and make it unique
+      let counter = 1;
+      let uniqueSlug = slug;
+      while (await this.blogRepo.findOne({ where: { slug: uniqueSlug } })) {
+        uniqueSlug = `${slug}-${counter}`;
+        counter++;
+      }
+      slug = uniqueSlug;
+    }
+
     const blog = this.blogRepo.create({
       title: dto.title,
-      slug: dto.slug,
+      slug: slug,
       content: dto.content,
       excerpt: dto.excerpt,
       thumbnail_url: dto.thumbnail_url,

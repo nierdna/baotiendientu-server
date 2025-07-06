@@ -17,13 +17,19 @@ curl -X POST http://localhost:8080/blogs \
   -H "Content-Type: application/json" \
   -d '{
     "title": "Bản tin thị trường Crypto tháng 7/2025",
-    "slug": "ban-tin-thi-truong-crypto-thang-7-2025",
     "content": "Thị trường crypto đang có những biến động mạnh...",
     "excerpt": "Tổng quan thị trường crypto tháng 7/2025",
-    "thumbnail_url": "https://s3-website-r1.s3cloud.vn/hsa/2025-07-05/1720185600000.jpg",
-    "category_id": "category-uuid",
+    "thumbnail_url": "https://i.ibb.co/abc123/image.jpg",
+    "category": {"id": "category-uuid", "name": "Cryptocurrency", "slug": "cryptocurrency", "description": "Articles about cryptocurrency"},
     "tags": ["blockchain", "crypto", "bitcoin"]
   }'
+```
+
+**Lưu ý quan trọng:**
+- **`slug` là tùy chọn** - Nếu không cung cấp, sẽ tự động tạo từ title
+- **`slug` tự động tạo** - Chuyển title thành URL-friendly (ví dụ: "Bản tin Crypto" → "ban-tin-crypto")
+- **`slug` tự động unique** - Nếu slug đã tồn tại, sẽ thêm số (ví dụ: "ban-tin-crypto-1")
+- **`slug` tối đa 255 ký tự** - Đảm bảo slug không quá dài
 ```
 
 **Response:**
@@ -37,8 +43,8 @@ curl -X POST http://localhost:8080/blogs \
     "slug": "ban-tin-thi-truong-crypto-thang-7-2025",
     "content": "Thị trường crypto đang có những biến động mạnh...",
     "excerpt": "Tổng quan thị trường crypto tháng 7/2025",
-    "thumbnail_url": "https://s3-website-r1.s3cloud.vn/hsa/2025-07-05/1720185600000.jpg",
-    "category_id": "category-uuid",
+    "thumbnail_url": "https://i.ibb.co/abc123/image.jpg",
+    "category": {"id": "category-uuid", "name": "Cryptocurrency", "slug": "cryptocurrency", "description": "Articles about cryptocurrency"},
     "author_id": "user-uuid",
     "is_published": false,
     "view_count": 0,
@@ -71,6 +77,8 @@ curl -X POST http://localhost:8080/blogs \
 
 ## 2. Cập nhật bài viết với Tags
 
+### 2.1. Update tổng quát (bao gồm is_published)
+
 **Endpoint:** `PUT /blogs/:id`
 
 **Request:**
@@ -81,6 +89,7 @@ curl -X PUT http://localhost:8080/blogs/blog-uuid \
   -d '{
     "title": "Bản tin thị trường Crypto tháng 7/2025 - Cập nhật",
     "content": "Nội dung cập nhật...",
+    "is_published": true,
     "tags": ["blockchain", "defi", "ethereum"]
   }'
 ```
@@ -96,12 +105,24 @@ curl -X PUT http://localhost:8080/blogs/blog-uuid \
     "slug": "ban-tin-thi-truong-crypto-thang-7-2025",
     "content": "Nội dung cập nhật...",
     "excerpt": "Tổng quan thị trường crypto tháng 7/2025",
-    "thumbnail_url": "https://s3-website-r1.s3cloud.vn/hsa/2025-07-05/1720185600000.jpg",
-    "category_id": "category-uuid",
-    "author_id": "user-uuid",
-    "is_published": false,
+    "thumbnail_url": "https://i.ibb.co/abc123/image.jpg",
+    "category": {
+      "id": "category-uuid",
+      "name": "Cryptocurrency",
+      "slug": "cryptocurrency",
+      "description": "Articles about cryptocurrency"
+    },
+    "author": {
+      "id": "user-uuid",
+      "email": "author@example.com",
+      "user_name": "Author Name",
+      "avatar_url": "https://example.com/avatar.jpg",
+      "role": "admin"
+    },
+    "is_published": true,
     "view_count": 0,
     "like_count": 0,
+    "published_at": "2025-07-05T10:30:00Z",
     "created_at": "2025-07-05T10:00:00Z",
     "updated_at": "2025-07-05T10:30:00Z",
     "tags": [
@@ -126,6 +147,40 @@ curl -X PUT http://localhost:8080/blogs/blog-uuid \
 }
 ```
 
+### 2.2. Publish trực tiếp
+
+**Endpoint:** `PUT /blogs/:id/publish`
+
+**Request:**
+```bash
+curl -X PUT http://localhost:8080/blogs/blog-uuid/publish \
+  -H "Authorization: Bearer <access_token>"
+```
+
+**Response:**
+```json
+{
+  "status_code": 200,
+  "message": "Blog published successfully",
+  "data": {
+    "id": "blog-uuid",
+    "title": "Blog title",
+    "slug": "blog-slug",
+    "content": "Blog content",
+    "is_published": true,
+    "published_at": "2025-07-05T10:30:00Z",
+    "updated_at": "2025-07-05T10:30:00Z"
+  },
+  "timestamp": "2025-07-05T10:30:00Z"
+}
+```
+
+**Lưu ý:**
+- **API 1** (`PUT /blogs/:id`) - Có thể update `is_published` cùng với các field khác
+- **API 2** (`PUT /blogs/:id/publish`) - Chỉ publish blog, không cần body
+- **Cả 2 API** đều yêu cầu authentication và quyền admin/author
+- **`published_at`** sẽ được set tự động khi `is_published = true`
+
 ---
 
 ## 3. Lấy danh sách bài viết với Tags
@@ -149,9 +204,20 @@ curl -X GET http://localhost:8080/blogs?page=1&limit=10
       "slug": "ban-tin-thi-truong-crypto-thang-7-2025",
       "content": "Thị trường crypto đang có những biến động mạnh...",
       "excerpt": "Tổng quan thị trường crypto tháng 7/2025",
-      "thumbnail_url": "https://s3-website-r1.s3cloud.vn/hsa/2025-07-05/1720185600000.jpg",
-      "category_id": "category-uuid",
-      "author_id": "user-uuid",
+      "thumbnail_url": "https://i.ibb.co/abc123/image.jpg",
+      "category": {
+        "id": "category-uuid",
+        "name": "Cryptocurrency",
+        "slug": "cryptocurrency",
+        "description": "Articles about cryptocurrency"
+      },
+      "author": {
+        "id": "user-uuid",
+        "email": "author@example.com",
+        "user_name": "Author Name",
+        "avatar_url": "https://example.com/avatar.jpg",
+        "role": "admin"
+      },
       "is_published": false,
       "view_count": 0,
       "like_count": 0,
@@ -203,8 +269,8 @@ curl -X GET http://localhost:8080/blogs/blog-uuid
     "slug": "ban-tin-thi-truong-crypto-thang-7-2025",
     "content": "Thị trường crypto đang có những biến động mạnh...",
     "excerpt": "Tổng quan thị trường crypto tháng 7/2025",
-    "thumbnail_url": "https://s3-website-r1.s3cloud.vn/hsa/2025-07-05/1720185600000.jpg",
-    "category_id": "category-uuid",
+    "thumbnail_url": "https://i.ibb.co/abc123/image.jpg",
+    "category": {"id": "category-uuid", "name": "Cryptocurrency", "slug": "cryptocurrency", "description": "Articles about cryptocurrency"},
     "author_id": "user-uuid",
     "is_published": false,
     "view_count": 1,
@@ -323,7 +389,7 @@ curl -X POST http://localhost:8080/media/upload \
   "status_code": 200,
   "message": "File uploaded successfully",
   "data": {
-    "url": "https://s3-website-r1.s3cloud.vn/hsa/2025-07-05/1720185600000.jpg"
+    "url": "https://i.ibb.co/abc123/image.jpg"
   },
   "timestamp": "2025-07-05T10:00:00Z"
 }
@@ -388,8 +454,8 @@ curl -X POST http://localhost:8080/blogs \
     "title": "Bài viết mới",
     "slug": "bai-viet-moi",
     "content": "Nội dung bài viết...",
-    "thumbnail_url": "https://s3-website-r1.s3cloud.vn/hsa/2025-07-05/1720185600000.jpg",
-    "category_id": "category-uuid",
+    "thumbnail_url": "https://i.ibb.co/abc123/image.jpg",
+    "category": {"id": "category-uuid", "name": "Cryptocurrency", "slug": "cryptocurrency", "description": "Articles about cryptocurrency"},
     "tags": ["blockchain", "crypto", "bitcoin"]
   }'
 ```

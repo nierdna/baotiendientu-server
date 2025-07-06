@@ -9,11 +9,15 @@ export class CreateBlogDto {
   @MaxLength(255)
   title: string;
 
-  @ApiProperty({ description: 'SEO slug', example: 'understanding-blockchain', maxLength: 255 })
+  @ApiPropertyOptional({ 
+    description: 'SEO slug (auto-generated from title if not provided)', 
+    example: 'understanding-blockchain', 
+    maxLength: 255 
+  })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @MaxLength(255)
-  slug: string;
+  slug?: string;
 
   @ApiProperty({ description: 'Content (HTML or Markdown)' })
   @IsString()
@@ -136,11 +140,39 @@ export class BlogResponseDto {
   @ApiPropertyOptional({ description: 'Meta description' })
   meta_description?: string;
 
-  @ApiPropertyOptional({ description: 'Category ID' })
-  category_id?: string;
+  @ApiPropertyOptional({ 
+    description: 'Category information',
+    example: {
+      id: 'category-uuid',
+      name: 'Cryptocurrency',
+      slug: 'cryptocurrency',
+      description: 'Articles about cryptocurrency'
+    }
+  })
+  category?: {
+    id: string;
+    name: string;
+    slug: string;
+    description?: string;
+  };
 
-  @ApiProperty({ description: 'Author ID' })
-  author_id: string;
+  @ApiProperty({ 
+    description: 'Author information',
+    example: {
+      id: 'author-uuid',
+      email: 'author@example.com',
+      first_name: 'John',
+      last_name: 'Doe',
+      avatar_url: 'https://example.com/avatar.jpg'
+    }
+  })
+  author: {
+    id: string;
+    email: string;
+    user_name: string;
+    avatar_url?: string;
+    role: string;
+  };
 
   @ApiProperty({ description: 'Is published', example: false })
   is_published: boolean;
@@ -151,14 +183,14 @@ export class BlogResponseDto {
   @ApiProperty({ description: 'Like count', example: 0 })
   like_count: number;
 
-  @ApiPropertyOptional({ description: 'Published at' })
-  published_at?: Date;
+  @ApiPropertyOptional({ description: 'Published at', example: '2025-07-05T10:30:00Z' })
+  published_at?: string;
 
-  @ApiProperty({ description: 'Created at' })
-  created_at: Date;
+  @ApiProperty({ description: 'Created at', example: '2025-07-05T10:00:00Z' })
+  created_at: string;
 
-  @ApiProperty({ description: 'Updated at' })
-  updated_at: Date;
+  @ApiProperty({ description: 'Updated at', example: '2025-07-05T10:30:00Z' })
+  updated_at: string;
 
   @ApiPropertyOptional({ 
     description: 'Array of tags associated with this blog',
@@ -180,14 +212,25 @@ export class BlogResponseDto {
       thumbnail_url: entity.thumbnail_url,
       meta_title: entity.meta_title,
       meta_description: entity.meta_description,
-      category_id: entity.category?.id,
-      author_id: entity.author?.id || null,
+      category: entity.category ? {
+        id: entity.category.id,
+        name: entity.category.name,
+        slug: entity.category.slug,
+        description: entity.category.description,
+      } : undefined,
+      author: entity.author ? {
+        id: entity.author.id,
+        email: entity.author.email,
+        user_name: entity.author.user_name,
+        avatar_url: entity.author.avatar_url,
+        role: entity.author.role,
+      } : undefined,
       is_published: entity.is_published,
       view_count: entity.view_count,
       like_count: entity.like_count,
-      published_at: entity.published_at,
-      created_at: entity.created_at,
-      updated_at: entity.updated_at,
+      published_at: entity.published_at?.toISOString(),
+      created_at: entity.created_at?.toISOString(),
+      updated_at: entity.updated_at?.toISOString(),
       tags: entity.tags?.map(tag => ({
         id: tag.id,
         name: tag.name,

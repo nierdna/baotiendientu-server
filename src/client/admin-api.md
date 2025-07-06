@@ -79,7 +79,7 @@ curl -X POST http://localhost:8080/blogs \
     "slug": "ban-tin-thi-truong-crypto-thang-7-2025",
     "content": "Thị trường crypto đang có những biến động mạnh...",
     "excerpt": "Tổng quan thị trường crypto tháng 7/2025",
-    "category_id": "<category_uuid>",
+    "category": {"id": "category-uuid", "name": "Cryptocurrency", "slug": "cryptocurrency", "description": "Articles about cryptocurrency"},
     "thumbnail_url": "https://example.com/thumbnail.jpg",
     "meta_title": "Bản tin Crypto tháng 7/2025",
     "meta_description": "Phân tích thị trường crypto tháng 7/2025"
